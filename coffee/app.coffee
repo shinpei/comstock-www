@@ -6,6 +6,7 @@ url = require 'url'
 S = require 'string'
 querystring = require 'querystring'
 uuid = require 'node-uuid'
+socketio = require 'socket.io'
 
 
 mongoUri = process.env.MONGOHQ_URL || 'mongodb://localhost/mydb'
@@ -73,9 +74,7 @@ getCommand = () ->
     )
 
         
-
-
-server = http.createServer (req, res)->
+server = http.createServer (req, res) ->
     filepath = ''
     isIgnore = false;
     pathname = url.parse(req.url).pathname;
@@ -83,7 +82,6 @@ server = http.createServer (req, res)->
     if pathname == '/'
         filepath = DOCROOT + "/index.html"
         getHandler(filepath, req, res);
-        return;
     else if pathname == '/favicon.ico'
         res.writeHead(404);
         return;
@@ -92,14 +90,31 @@ server = http.createServer (req, res)->
         params = querystring.parse(query);
         postCommand(params.command, params.user, params.date, params.desc);
         res.writeHead(200)
+    else if pathname == "/getCommand"
+        res.writeHead(200, {"Content-type": "plain/text"})
+    else if pathname == "/search"
+        res.writeHead(200, {"Content-type": "plain/text"})
     else
         filepath = DOCROOT + req.url;
         getHandler(filepath, req, res);
         return;
 
-getCommand()
-
+## io = socketio.listen(server);
 port = process.env.PORT || 5000;
 server.listen(port, ->
     log "http server listening on port " + server.address().port;
 )
+
+###
+io.configure ->
+    io.set("transports", ["xhr-polling"]);
+    io.set("polling duration", 10);
+
+
+io.sockets.on('connection', (socket) ->
+    socket.on('fetchCommands', (data) ->
+        commandData = getCommnad();
+        io.sockets.emit('recvCommand', {data: commandData});
+    )
+)
+###
