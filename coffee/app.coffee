@@ -58,19 +58,32 @@ postCommand = (command, user, date, desc) ->
         )
     )
 
+writeAsHtml = (doc) ->
+    log "Logging.."
+    log doc
+    output = ""
+    output += "<div class='command'>"
+    output += doc.data.command
+    output += "</div>"
+    return output;
 
-getCommand = () ->
+getCommand = (res) ->
     mongoClient.connect(mongoUri, (err, db) ->
         throw err if err
         collection = db.collection(COLLECTION_NAME)
+        response = '<html><head><!-- Loading Bootstrap --><link href="css/bootstrap.min.css" rel="stylesheet"><!-- Loading Flat UI --><link href="css/flat-ui.css" rel="stylesheet"><link href="css/demo.css" rel="stylesheet"></head><body>'
         docs = collection.find({}, limit: 5)
-        docs.count (err, count) ->
-            log " #{count} document(s) fund"
-            log "=========================="
-            docs.toArray (err, docs) ->
-                throw err if err
-                for doc in docs then log doc
-                    
+        docs.each (err, doc) ->
+            throw err if err
+            log 'hi'
+            if doc == null
+                res.writeHead(200, {"Content-type": "text/html"});
+                response += "</body></html>"
+                log response
+                res.end(response);
+                return;
+            response += writeAsHtml(doc);
+        return
     )
 
         
@@ -91,7 +104,7 @@ server = http.createServer (req, res) ->
         postCommand(params.command, params.user, params.date, params.desc);
         res.writeHead(200)
     else if pathname == "/getCommand"
-        res.writeHead(200, {"Content-type": "plain/text"})
+        getCommand(res)
     else if pathname == "/search"
         res.writeHead(200, {"Content-type": "plain/text"})
     else
