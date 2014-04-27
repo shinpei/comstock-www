@@ -1,0 +1,12 @@
+{
+  "name": "commandmemo",
+  "version": "0.0.0",
+  "description": "Command memorize service",
+  "engines": {
+    "node": "0.10.x",
+    "npm": "1.2.x"
+  },
+  "devDependencies": {
+    "socket.io": "^0.9.16"
+  }
+}
