@@ -2,16 +2,17 @@
   "name": "commandmemo",
   "version": "0.0.0",
   "description": "Command memorize service",
-  "main": "app.js", 
+  "main": "app.js",
   "engines": {
     "node": "0.10.x",
     "npm": "1.2.x"
   },
   "devDependencies": {
-	  "async":     "0.1.18",
-	  "ejs":       "0.4.3",
-	  "express":   "2.4.6",
-	  "faceplate": "0.0.4",
-      "socket.io": "latest"
+    "async": "0.1.18",
+    "ejs": "0.4.3",
+    "express": "2.4.6",
+    "faceplate": "0.0.4",
+    "mongodb": "^1.4.2",
+    "socket.io": "latest"
   }
 }
