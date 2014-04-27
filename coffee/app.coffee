@@ -5,11 +5,14 @@ log = console.log
 url = require 'url'
 S = require 'string'
 querystring = require 'querystring'
+uuid = require 'node-uuid'
+
 
 mongoUri = process.env.MONGOHQ_URL || 'mongodb://localhost/mydb'
 mongoClient = mongo.MongoClient;
 
 DOCROOT = "documents"
+COLLECTION_NAME = "test"
 
 getHandler = (filepath, req, res) ->
     fs.readFile(filepath, "utf-8", (err, data) ->
@@ -29,35 +32,54 @@ getHandler = (filepath, req, res) ->
 postCommand = (command, user, date, desc) ->
     mongoClient.connect(mongoUri, (err, db) ->
         throw err if err
-        collection = db.collection('test')
-        console.log 'removing documents'
+        collection = db.collection(COLLECTION_NAME)
+        log 'removing documents'
+        id = uuid.v1()
         collection.remove ((err, result) ->
             throw err if err
-            console.log "colelction cleared!"
+            log "colelction cleared!"
             oneData =
-                "id" :
+                "id" : id
+                "date": date
+                "data":
                     "command": command
                     "user" : user
-                    "date" : date
                     "desc" : desc
                 
             collection.insert(oneData, (err, docs) ->
                 throw err if err
-                console.log "Just inserted, " + docs.length
+                log "Just inserted, " + docs.length
                 collection.find({}).toArray (err, docs) ->
                     throw err if err
                     docs.forEach (doc) ->
-                        console.log "found document:" + doc.id.command
+                        log "found document:" + doc.data.command
             )
         )
     )
+
+
+getCommand = () ->
+    mongoClient.connect(mongoUri, (err, db) ->
+        throw err if err
+        collection = db.collection(COLLECTION_NAME)
+        docs = collection.find({}, limit: 5)
+        docs.count (err, count) ->
+            log " #{count} document(s) fund"
+            log "=========================="
+            docs.toArray (err, docs) ->
+                throw err if err
+                for doc in docs then log doc
+                    
+    )
+
+        
 
 
 server = http.createServer (req, res)->
     filepath = ''
     isIgnore = false;
     pathname = url.parse(req.url).pathname;
-    console.log "pathname=" + pathname
+    log "pathname=" + pathname
     if pathname == '/'
         filepath = DOCROOT + "/index.html"
         getHandler(filepath, req, res);
@@ -68,7 +90,6 @@ server = http.createServer (req, res)->
     else if pathname == "/postCommand"
         query = url.parse(req.url).query
         params = querystring.parse(query);
-        console.log params
         postCommand(params.command, params.user, params.date, params.desc);
         res.writeHead(200)
     else
@@ -76,8 +97,9 @@ server = http.createServer (req, res)->
         getHandler(filepath, req, res);
         return;
 
+getCommand()
 
 port = process.env.PORT || 5000;
 server.listen(port, ->
-    console.log "http server listening on port " + server.address().port;
+    log "http server listening on port " + server.address().port;
 )

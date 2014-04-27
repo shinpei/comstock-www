@@ -12,6 +12,7 @@
     "ejs": "^0.4.3",
     "faceplate": "^0.0.4",
     "mongodb": "^1.4.2",
+    "node-uuid": "^1.4.1",
     "socket.io": "^0.9.16",
     "string": "^1.8.1"
   },
