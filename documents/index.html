@@ -19,13 +19,15 @@
 <div class="container">
 <div class="demo-headline">
 <h1 class="demo-logo">Tag
-<small>Never forget the command</small>
+<small>Remember your command</small>
 </h1>
 </div> <!--headline-->
-<form method="POST" id="mainForm">
+<form action="postCommand" method="GET" id="mainForm">
+<input type="hidden" name="date" value="1234">
+<input type="hidden" name="user" value="test">
 command: <input size=60 type="text" name="command"></input><p>
-<textarea name="description" cols=60 rows=5>easy description here</textarea><br />
-<a style="width:300px; margin-left:240px" href="#fakelink" class="btn btn-lg btn-primary" onClick="$('#mainForm').submit()">Memo!</a>
+<textarea name="desc" cols=60 rows=5>easy description here</textarea><br />
+<a style="width:300px; margin-left:240px" href="#fakelink" class="btn btn-lg btn-primary" onClick="$('#mainForm').submit()">Tag!</a>
 </form>
 </div> <!-- container -->
     <footer>

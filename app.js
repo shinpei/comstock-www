@@ -20,6 +20,8 @@
 
   mongoClient = mongo.MongoClient;
 
+  DOCROOT = "documents";
+
   getHandler = function(filepath, req, res) {
     return fs.readFile(filepath, "utf-8", function(err, data) {
       var header;
@@ -41,40 +43,67 @@
     });
   };
 
-  postCommand = function(query, user) {
-    return console.log(query);
+  postCommand = function(command, user, date, desc) {
+    return mongoClient.connect(mongoUri, function(err, db) {
+      var collection;
+      if (err) {
+        throw err;
+      }
+      collection = db.collection('test');
+      console.log('removing documents');
+      return collection.remove((function(err, result) {
+        var oneData;
+        if (err) {
+          throw err;
+        }
+        console.log("colelction cleared!");
+        oneData = {
+          "id": {
+            "command": command,
+            "user": user,
+            "date": date,
+            "desc": desc
+          }
+        };
+        return collection.insert(oneData, function(err, docs) {
+          if (err) {
+            throw err;
+          }
+          console.log("Just inserted, " + docs.length);
+          return collection.find({}).toArray(function(err, docs) {
+            if (err) {
+              throw err;
+            }
+            return docs.forEach(function(doc) {
+              return console.log("found document:" + doc.id.command);
+            });
+          });
+        });
+      }));
+    });
   };
 
-  mongoClient.connect(mongoUri, function(err, db) {
-    var collection;
-    if (err) {
-      throw error;
-    }
-    return collection = db.collection('test');
-  });
-
-  DOCROOT = "documents";
-
   server = http.createServer(function(req, res) {
-    var filepath, isIgnore;
+    var filepath, isIgnore, params, pathname, query;
     filepath = '';
     isIgnore = false;
-    console.log(url.parse(req.url).pathname);
-    if (req.url === '/') {
+    pathname = url.parse(req.url).pathname;
+    console.log("pathname=" + pathname);
+    if (pathname === '/') {
       filepath = DOCROOT + "/index.html";
-    } else if (req.url === '/favicon.ico') {
-      isIgnore = true;
-    } else if (req.url === S(req.url)) {
-
+      getHandler(filepath, req, res);
+    } else if (pathname === '/favicon.ico') {
+      res.writeHead(404);
+    } else if (pathname === "/postCommand") {
+      query = url.parse(req.url).query;
+      params = querystring.parse(query);
+      console.log(params);
+      postCommand(params.command, params.user, params.date, params.desc);
+      return res.writeHead(200);
     } else {
       filepath = DOCROOT + req.url;
+      getHandler(filepath, req, res);
     }
-    console.log("Request: " + filepath);
-    if (isIgnore === true) {
-      res.writeHead(404);
-      return;
-    }
-    return getHandler(filepath, req, res);
   });
 
   port = process.env.PORT || 5000;

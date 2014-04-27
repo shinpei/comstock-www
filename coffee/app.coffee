@@ -9,6 +9,8 @@ querystring = require 'querystring'
 mongoUri = process.env.MONGOHQ_URL || 'mongodb://localhost/mydb'
 mongoClient = mongo.MongoClient;
 
+DOCROOT = "documents"
+
 getHandler = (filepath, req, res) ->
     fs.readFile(filepath, "utf-8", (err, data) ->
         throw err if err
@@ -24,35 +26,56 @@ getHandler = (filepath, req, res) ->
         res.end(data);
     );
 
-postCommand = (query, user) ->
-    console.log(query)
-            
-mongoClient.connect(mongoUri, (err, db) ->
-    throw error if err
-    collection = db.collection 'test'
-)
-DOCROOT = "documents"
+postCommand = (command, user, date, desc) ->
+    mongoClient.connect(mongoUri, (err, db) ->
+        throw err if err
+        collection = db.collection('test')
+        console.log 'removing documents'
+        collection.remove ((err, result) ->
+            throw err if err
+            console.log "colelction cleared!"
+            oneData =
+                "id" :
+                    "command": command
+                    "user" : user
+                    "date" : date
+                    "desc" : desc
+                
+            collection.insert(oneData, (err, docs) ->
+                throw err if err
+                console.log "Just inserted, " + docs.length
+                collection.find({}).toArray (err, docs) ->
+                    throw err if err
+                    docs.forEach (doc) ->
+                        console.log "found document:" + doc.id.command
+            )
+        )
+    )
+
 
 server = http.createServer (req, res)->
     filepath = ''
     isIgnore = false;
-    console.log url.parse(req.url).pathname;    
-    if req.url == '/'
+    pathname = url.parse(req.url).pathname;
+    console.log "pathname=" + pathname
+    if pathname == '/'
         filepath = DOCROOT + "/index.html"
-    else if req.url == '/favicon.ico'
-        isIgnore = true;
-    else if req.url == S(req.url)
+        getHandler(filepath, req, res);
+        return;
+    else if pathname == '/favicon.ico'
+        res.writeHead(404);
+        return;
+    else if pathname == "/postCommand"
+        query = url.parse(req.url).query
+        params = querystring.parse(query);
+        console.log params
+        postCommand(params.command, params.user, params.date, params.desc);
+        res.writeHead(200)
     else
         filepath = DOCROOT + req.url;
+        getHandler(filepath, req, res);
+        return;
 
-    console.log "Request: " + filepath;
-    
-    if isIgnore == true
-        res.writeHead(404)
-        return
-    
-    getHandler(filepath, req, res)
-    
 
 port = process.env.PORT || 5000;
 server.listen(port, ->
