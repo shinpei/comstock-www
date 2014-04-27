@@ -3,17 +3,11 @@ fs = require 'fs'
 mongo = require 'mongodb'
 log = console.log
 url = require 'url'
-
 S = require 'string'
 querystring = require 'querystring'
 
 mongoUri = process.env.MONGOHQ_URL || 'mongodb://localhost/mydb'
 mongoClient = mongo.MongoClient;
-
-postHandler = (req, res, postData) ->
-    console.log querystring.parse(postData).text
-    console.log req
-
 
 getHandler = (filepath, req, res) ->
     fs.readFile(filepath, "utf-8", (err, data) ->
@@ -30,7 +24,8 @@ getHandler = (filepath, req, res) ->
         res.end(data);
     );
 
-
+postCommand = (query, user) ->
+    console.log(query)
             
 mongoClient.connect(mongoUri, (err, db) ->
     throw error if err
@@ -41,28 +36,22 @@ DOCROOT = "documents"
 server = http.createServer (req, res)->
     filepath = ''
     isIgnore = false;
-    postData = '';
-    
+    console.log url.parse(req.url).pathname;    
     if req.url == '/'
         filepath = DOCROOT + "/index.html"
     else if req.url == '/favicon.ico'
         isIgnore = true;
+    else if req.url == S(req.url)
     else
         filepath = DOCROOT + req.url;
 
     console.log "Request: " + filepath;
-    req.addEventListner('data', (chunk) ->
-        postData = chunk
-    )
     
     if isIgnore == true
         res.writeHead(404)
         return
     
-    if req.method == "GET"
-        getHandler(filepath, req, res)
-    else if req.method == "POST"
-        postHandler(req, res, postData)
+    getHandler(filepath, req, res)
     
 
 port = process.env.PORT || 5000;
