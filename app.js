@@ -1,7 +1,7 @@
 var http = require ('http')
 //var socketio = require('socket.io');
 var fs = require ('fs');
-var redis = require('redis');
+var redis = require('mongodb');
 
 var server = http.createServer(function (req, res) {
 	res.writeHead(200, {"Content-type": "text/html"});
