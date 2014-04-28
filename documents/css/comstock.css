@@ -1,0 +1,16 @@
+
+.commandContain {
+	background-color: blue;
+	color: 'red';
+	.command {
+		padding-left: 20px;
+	}
+	.desc {
+		padding-left: 20px;
+		font-weight: bold;
+		color: red;
+	}
+	.user {
+		padding-left : 100px;
+	}
+}
