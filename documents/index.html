@@ -2,7 +2,7 @@
 <html lang="jp">
 <head>
 <meta charset="utf-8">
-<title>Tag</title>
+<title>Comstock</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <!-- Loading Bootstrap -->
@@ -11,6 +11,8 @@
 <!-- Loading Flat UI -->
 <link href="css/flat-ui.css" rel="stylesheet">
 <link href="css/demo.css" rel="stylesheet">
+
+<link href="css/comstock.css" rel="stylesheet">
 </head>
 <body>
 <div class="container">
@@ -20,11 +22,12 @@
 </h1>
 <fb:login-button autologoutlink="true" perms="user_likes" size="large"></fb:login-button>
 </div> <!--headline-->
+
 <form action="postCommand" method="GET" id="mainForm">
 <input type="hidden" name="date" value="1234">
 <input type="hidden" name="user" value="test">
-command: <input size=60 type="text" name="command"></input><p>
-<textarea name="desc" cols=60 rows=5>easy description here</textarea><br />
+<input size=60 type="text" name="command" value placeholder="Put your command here" class="form-control"></input><p>
+<textarea class="form-control" name="desc" value placeholder="description here" cols=60 rows=5></textarea><br />
 <a style="width:300px; margin-left:240px" href="#fakelink" class="btn btn-lg btn-primary" onClick="$('#mainForm').submit()">Tag!</a>
 </form>
 <div>

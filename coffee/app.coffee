@@ -60,8 +60,10 @@ writeAsHtml = (doc) ->
     log "Logging.."
     log doc
     output = ""
-    output += "<div class='command'>"
-    output += doc.data.command
+    output += "<div class='commandContain'>"
+    output += "<span class='command'>" + doc.data.command + "</span>";
+    output += "<span class='desc'>" + doc.data.desc + "</span>";
+    output += "<span class='user'> by " + doc.data.user + "</span>";
     output += "</div>"
     return output;
 
@@ -73,7 +75,6 @@ getCommand = (res) ->
         docs = collection.find({}, limit: 5)
         docs.each (err, doc) ->
             throw err if err
-            log 'hi'
             if doc == null
                 res.writeHead(200, {"Content-type": "text/html"});
                 response += "</body></html>"
