@@ -25,6 +25,10 @@ getHandler = (filepath, req, res) ->
             header["Content-type"] = "text/html"
         else if S(filepath).endsWith(".js")
             header["Content-type"] = "application/javascript"
+        else if S(filepath).endsWith(".ico")
+            header["Content-type"] = "image/x-icon"
+        else if S(filepath).endsWith("png")
+            header["Conent-type"] = "image/png"
         res.writeHead(200, header);
         res.end(data);
     );
@@ -94,9 +98,6 @@ server = http.createServer (req, res) ->
     if pathname == '/'
         filepath = DOCROOT + "/index.html"
         getHandler(filepath, req, res);
-    else if pathname == '/favicon.ico'
-        res.writeHead(404);
-        return;
     else if pathname == "/postCommand"
         query = url.parse(req.url).query
         params = querystring.parse(query);
