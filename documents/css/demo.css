@@ -6,11 +6,11 @@
   max-width: 970px !important;
 }
 .demo-headline {
-  padding: 73px 0 110px;
+  padding: 73px 0 73px;
   text-align: center;
 }
 .demo-logo {
-  font: 900 90px/100px "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font: 800 80px/80px "Helvetica Neue", Helvetica, Arial, sans-serif;
   letter-spacing: -2px;
   margin: 10px 0;
 }

@@ -65,7 +65,7 @@ writeAsHtml = (doc) ->
     log doc
     output = ""
     output += "<div class='commandContain'>"
-    output += "<span class='command'>" + doc.data.command + "</span>";
+    output += '<pre class="prettyprint">' + doc.data.command + "</pre>";
     output += "<span class='desc'>" + doc.data.desc + "</span>";
     output += "<span class='user'> by " + doc.data.user + "</span>";
     output += "</div>"
