@@ -18,8 +18,8 @@ function login() {
 
 window.fbAsyncInit = function() {
 	FB.init({
-		appId      : '506488346123336', // AppID
-		channelUrl : '//http://calm-wildwood-1529.herokuapp.com/channel.html', 
+		appId      : '463757170423444', // AppID
+		channelUrl : '//http://comstock.herokuapp.com/channel.html', 
 		status     : true, // check login status
 		cookie     : true, // enable cookies to allow the server to access the session
 		xfbml      : true  // parse XFBML
