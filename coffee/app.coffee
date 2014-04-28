@@ -8,7 +8,6 @@ querystring = require 'querystring'
 uuid = require 'node-uuid'
 socketio = require 'socket.io'
 
-
 mongoUri = process.env.MONGOHQ_URL || 'mongodb://localhost/mydb'
 mongoClient = mongo.MongoClient;
 
@@ -34,27 +33,26 @@ postCommand = (command, user, date, desc) ->
     mongoClient.connect(mongoUri, (err, db) ->
         throw err if err
         collection = db.collection(COLLECTION_NAME)
-        log 'removing documents'
+#        log 'removing documents'
         id = uuid.v1()
-        collection.remove ((err, result) ->
+#        collection.remove ((err, result) ->
+#            throw err if err
+#            log "colelction cleared!"
+        oneData =
+            "id" : id
+            "date": date
+            "data":
+                "command": command
+                "user" : user
+                "desc" : desc
+               
+        collection.insert(oneData, (err, docs) ->
             throw err if err
-            log "colelction cleared!"
-            oneData =
-                "id" : id
-                "date": date
-                "data":
-                    "command": command
-                    "user" : user
-                    "desc" : desc
-                
-            collection.insert(oneData, (err, docs) ->
+            log "Just inserted, " + docs.length
+            collection.find({}).toArray (err, docs) ->
                 throw err if err
-                log "Just inserted, " + docs.length
-                collection.find({}).toArray (err, docs) ->
-                    throw err if err
-                    docs.forEach (doc) ->
-                        log "found document:" + doc.data.command
-            )
+                docs.forEach (doc) ->
+                      log "found document:" + doc.data.command
         )
     )
 
@@ -102,7 +100,8 @@ server = http.createServer (req, res) ->
         query = url.parse(req.url).query
         params = querystring.parse(query);
         postCommand(params.command, params.user, params.date, params.desc);
-        res.writeHead(200)
+        filepath = DOCROOT + "/index.html"
+        getHandler(filepath, req, res);
     else if pathname == "/getCommand"
         getCommand(res)
     else if pathname == "/search"

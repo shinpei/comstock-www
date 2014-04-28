@@ -51,43 +51,35 @@
 
   postCommand = function(command, user, date, desc) {
     return mongoClient.connect(mongoUri, function(err, db) {
-      var collection, id;
+      var collection, id, oneData;
       if (err) {
         throw err;
       }
       collection = db.collection(COLLECTION_NAME);
-      log('removing documents');
       id = uuid.v1();
-      return collection.remove((function(err, result) {
-        var oneData;
+      oneData = {
+        "id": id,
+        "date": date,
+        "data": {
+          "command": command,
+          "user": user,
+          "desc": desc
+        }
+      };
+      return collection.insert(oneData, function(err, docs) {
         if (err) {
           throw err;
         }
-        log("colelction cleared!");
-        oneData = {
-          "id": id,
-          "date": date,
-          "data": {
-            "command": command,
-            "user": user,
-            "desc": desc
-          }
-        };
-        return collection.insert(oneData, function(err, docs) {
+        log("Just inserted, " + docs.length);
+        return collection.find({}).toArray(function(err, docs) {
           if (err) {
             throw err;
           }
-          log("Just inserted, " + docs.length);
-          return collection.find({}).toArray(function(err, docs) {
-            if (err) {
-              throw err;
-            }
-            return docs.forEach(function(doc) {
-              return log("found document:" + doc.data.command);
-            });
+          return docs.forEach(function(doc) {
+            return log("found document:" + doc.data.command);
           });
         });
-      }));
+      });
     });
   };
 
@@ -147,7 +139,8 @@
       query = url.parse(req.url).query;
       params = querystring.parse(query);
       postCommand(params.command, params.user, params.date, params.desc);
-      return res.writeHead(200);
+      filepath = DOCROOT + "/index.html";
+      return getHandler(filepath, req, res);
     } else if (pathname === "/getCommand") {
       return getCommand(res);
     } else if (pathname === "/search") {
