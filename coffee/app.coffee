@@ -44,10 +44,10 @@ postCommand = (command, user, date, desc) ->
 #            log "colelction cleared!"
         oneData =
             "id" : id
+            "user": user
             "date": date
             "data":
                 "command": command
-                "user" : user
                 "desc" : desc
                
         collection.insert(oneData, (err, docs) ->
@@ -59,6 +59,9 @@ postCommand = (command, user, date, desc) ->
                       log "found document:" + doc.data.command
         )
     )
+
+authenticateUser = (user, password) ->
+    return 
 
 writeAsHtml = (doc) ->
     log "Logging.."

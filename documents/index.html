@@ -4,58 +4,60 @@
 <meta charset="utf-8">
 <title>Comstock</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<!-- Loading Bootstrap -->
-<link href="css/bootstrap.min.css" rel="stylesheet">
-
-<!-- Loading Flat UI -->
 <link href="css/flat-ui.css" rel="stylesheet">
 <link href="css/demo.css" rel="stylesheet">
 
-<link href="css/comstock.css" rel="stylesheet">
-</head>
-<body>
-<div class="container">
-<div class="demo-headline">
-<h1 class="demo-logo">Comstock
-<small>Stock your command to the cloud</small>
-</h1>
-<fb:login-button autologoutlink="true" perms="user_likes" size="large"></fb:login-button>
-</div> <!--headline-->
 
+<body>
+<center>
+<h2>Comstock</h2>
+<small>Stock your command to the cloud</small>
+<p>
+<input type="text" value placeholder="Email/username" class="form-control"></input>
+<input type="text" value placeholder="password" class="form-control"></input>
+<p><a class="btn btn-primary">register/login</a>
+</center>
+
+<div class="container">
+
+<h4>Install</h4>
+<pre class="prettyprint lang-sh">
+$ go get github.com/shinpei/comstock
+</pre>
+
+<h4>Setup</h4>
+<pre class="prettyprint lang-sh">
+$ comstock
+Compath doesn't exists, will you create dir? [Y/n]:
+Create compath as '/home/yourname/.comstock'
+</pre>
+
+<h4>Login</h4>
 <pre class="prettyprint">
+$ comstock login
+Your registered email address? : shinpei@githuxx.com
+And password? :
+Knock konck... success!
+</pre>
+<h4>Stock your command </h4>
+<pre class="prettyprint lang-sh">
 $ coffee -c -O . hoge.coffee
 $ comstock save # save former command to comstock
 </pre>
-<form action="postCommand" method="GET" id="mainForm">
-<input type="hidden" name="date" value="1234">
-<input type="hidden" name="user" value="test">
-<input size=60 type="text" name="command" value placeholder="Put your command here" class="form-control"></input><p>
-<textarea class="form-control" name="desc" value placeholder="description here" cols=60 rows=5></textarea><br />
-<div style="text-align:center"><a style="width:300px" href="#fakelink" class="btn btn-lg btn-primary" onClick="$('#mainForm').submit()">Stock!</a></div>
-</form>
-<div>
+
+<h4>Fecth your command</h4>
+<pre class="prettyprint">
+$ comstock list
+1: coffee -c -0 . hoge.coffee
+$ comstock run 1 # or you can use 'comstock get 1' and copy and paste it
+</pre>
 </div>
-<iframe src="/getCommand" width=100% height=300px style="border:none">
-</iframe>
-</div> <!-- container -->
 
     <footer>
-      <div class="container">
-        <div class="row">
-    		  <div class="col-md-9">
-				<h3 class="footer-title">About</h3>
-				<p> Do you have any feedback? please contact me via <a href="http://www.twitter.com/shinpeinkt">@shinpeinkt</a>, or <a href="http://www.github.com/shinpei">github/shinpei</a>
-				</p>
-    		  </div>
-        </div>
-      </div>
+		<p> Do you have any feedback? please contact me via <a href="http://www.twitter.com/shinpeinkt">@shinpeinkt</a>, or <a href="http://www.github.com/shinpei">github/shinpei</a>
+		</p>
     </footer>
-
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-<script src="js/bootstrap.min.js"></script>
-<script src="js/socket.io.js"></script>
-<script src="js/comstock.js"></script>
+<script src="js/angular.min.js"></script>
 <script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js?skin=desert"></script>
 </body>
 </html>
