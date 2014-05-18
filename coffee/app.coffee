@@ -75,8 +75,12 @@ loginAs = (username, password, res) ->
         collection = db.collection(USER_COLLECTION)
         createdNewUser = false
         uid = 0;
+        log "god username?"
+        log username
         docs = collection.findOne({mail: username}, (err, item) ->
             throw err if err
+            log "User finding?"
+            log item
             if item == null
                 # cannot find user. register it
                 collection.find().count((err, count) ->
@@ -104,16 +108,16 @@ loginAs = (username, password, res) ->
                 uid = item.uid;
                 authenticate(uid, password, res)
         ) # findOne done
-        
     )
     return
 
 authenticate = (uid, password, res) ->
+    log "Authentication process got uid="+ uid
     mongoClient.connect(mongoUri, (err, db) ->
         throw err if err
         collection = db.collection(AUTH_COLLECTION)
         docs = collection.findOne({uid: uid}, (err, item) ->
-            if err != null
+            if item != null
                 # found uid
                 if password == item.password
                     response = makeHTMLResponse("Success")
@@ -205,6 +209,7 @@ server = http.createServer (req, res) ->
         params = querystring.parse(query)
         username = params.mail
         password = params.password
+
         loginAs(username, password, res);
     else if pathname == "/search"
         res.writeHead(200, {"Content-type": "plain/text"})

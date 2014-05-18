@@ -107,12 +107,16 @@
       collection = db.collection(USER_COLLECTION);
       createdNewUser = false;
       uid = 0;
+      log("god username?");
+      log(username);
       return docs = collection.findOne({
         mail: username
       }, function(err, item) {
         if (err) {
           throw err;
         }
+        log("User finding?");
+        log(item);
         if (item === null) {
           return collection.find().count(function(err, count) {
             var newUser;
@@ -152,6 +156,7 @@
   };
 
   authenticate = function(uid, password, res) {
+    log("Authentication process got uid=" + uid);
     mongoClient.connect(mongoUri, function(err, db) {
       var collection, docs;
       if (err) {
@@ -162,7 +167,7 @@
         uid: uid
       }, function(err, item) {
         var response;
-        if (err !== null) {
+        if (item !== null) {
           if (password === item.password) {
             response = makeHTMLResponse("Success");
             res.writeHead(200, {
