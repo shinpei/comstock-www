@@ -13,9 +13,12 @@
 <h2>Comstock</h2>
 <small>Stock your command to the cloud</small>
 <p>
-<input type="text" value placeholder="Email/username" class="form-control"></input>
-<input type="text" value placeholder="password" class="form-control"></input>
-<p><a class="btn btn-primary">register/login</a>
+<form id="loginform" action="loginAs" method="GET">
+<input type="text" name="mail" value placeholder="Email/username" class="form-control"></input>
+<input type="text" name="password" value placeholder="password" class="form-control"></input>
+
+<p><a class="btn btn-primary" onclick="$('#loginform').submit()">register/login</a>
+</form>
 </center>
 
 <div class="container">
@@ -57,7 +60,7 @@ $ comstock run 1 # or you can use 'comstock get 1' and copy and paste it
 		<p> Do you have any feedback? please contact me via <a href="http://www.twitter.com/shinpeinkt">@shinpeinkt</a>, or <a href="http://www.github.com/shinpei">github/shinpei</a>
 		</p>
     </footer>
-<script src="js/angular.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
 <script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js?skin=desert"></script>
 </body>
 </html>

@@ -12,7 +12,9 @@ mongoUri = process.env.MONGOHQ_URL || 'mongodb://localhost/mydb'
 mongoClient = mongo.MongoClient;
 
 DOCROOT = "documents"
-COLLECTION_NAME = "test"
+USER_COLLECTION = "user"
+AUTH_COLLECTION = "authinfo" # "auth" is reserve words for mongo client
+DATA_COLLECTION = "test"
 
 getHandler = (filepath, req, res) ->
     fs.readFile(filepath, "utf-8", (err, data) ->
@@ -36,7 +38,7 @@ getHandler = (filepath, req, res) ->
 postCommand = (command, user, date, desc) ->
     mongoClient.connect(mongoUri, (err, db) ->
         throw err if err
-        collection = db.collection(COLLECTION_NAME)
+        collection = db.collection(DATA_COLLECTION)
 #        log 'removing documents'
         id = uuid.v1()
 #        collection.remove ((err, result) ->
@@ -60,8 +62,97 @@ postCommand = (command, user, date, desc) ->
         )
     )
 
-authenticateUser = (user, password) ->
+
+makeHTMLResponse = (msg, status) ->
+    response = '<html><head><!-- Loading Bootstrap --><link href="css/bootstrap.min.css" rel="stylesheet"><!-- Loading Flat UI --><link href="css/flat-ui.css" rel="stylesheet"><link href="css/demo.css" rel="stylesheet"></head><body>'
+    response += msg
+    response += "</body></html>"
+
+
+loginAs = (username, password, res) ->
+    mongoClient.connect(mongoUri, (err, db) ->
+        throw err if err
+        collection = db.collection(USER_COLLECTION)
+        createdNewUser = false
+        uid = 0;
+        docs = collection.findOne({mail: username}, (err, item) ->
+            throw err if err
+            if item == null
+                # cannot find user. register it
+                collection.find().count((err, count) ->
+                    throw err if err
+                    uid = count + 1
+                    newUser =
+                       "uid": uid
+                       "username": ""
+                       "mail": username # first register, email is uname
+                       "created": 1244
+                       "lastLogin":0
+                    collection.insert(newUser, (err, docs) ->
+                        throw err if err
+                        log "uid is " + uid
+                        addAuthenticate(uid, password)
+                        response = makeHTMLResponse("User added, thank you for registering", 200)
+                        res.writeHead(200, {"Content-type": "text/html"});
+                        res.end(response)
+                    )
+                )
+            else
+                # found user
+                log item
+                log "User found, now authenticate"
+                uid = item.uid;
+                authenticate(uid, password, res)
+        ) # findOne done
+        
+    )
+    return
+
+authenticate = (uid, password, res) ->
+    mongoClient.connect(mongoUri, (err, db) ->
+        throw err if err
+        collection = db.collection(AUTH_COLLECTION)
+        docs = collection.findOne({uid: uid}, (err, item) ->
+            if err != null
+                # found uid
+                if password == item.password
+                    response = makeHTMLResponse("Success")
+                    res.writeHead(200,{"Content-type": "text/html"});
+                    res.end(response)
+                    log "authenticate done with ok"
+                else
+                    response = makeHTMLResponse("Failed")
+                    res.writeHead(403 ,{"Content-type": "text/html"});
+                    res.end(response)
+                    log "authenticate done with ng"
+            else
+                response = makeHTMLResponse("Not found")
+                res.writeHead(404 ,{"Content-type": "text/html"});
+                res.end(response)
+                log "cannot find uid"
+                
+        )
+    )
     return 
+
+
+addAuthenticate = (uid, password) ->
+    # add user-password to the db
+    mongoClient.connect(mongoUri, (err, db) ->
+        throw err if err
+        collection = db.collection(AUTH_COLLECTION)
+        oneData =
+            "uid": uid
+            "date": ""
+            "password":password
+        collection.insert(oneData, (err, docs) ->
+            throw err if err
+        )
+    )
+    log "password insertion done"
+    return
+
+
 
 writeAsHtml = (doc) ->
     log "Logging.."
@@ -109,6 +200,12 @@ server = http.createServer (req, res) ->
         getHandler(filepath, req, res);
     else if pathname == "/getCommand"
         getCommand(res)
+    else if pathname == "/loginAs"
+        query = url.parse(req.url).query
+        params = querystring.parse(query)
+        username = params.mail
+        password = params.password
+        loginAs(username, password, res);
     else if pathname == "/search"
         res.writeHead(200, {"Content-type": "plain/text"})
     else
