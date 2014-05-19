@@ -8,6 +8,7 @@ querystring = require 'querystring'
 uuid = require 'node-uuid'
 socketio = require 'socket.io'
 
+
 mongoUri = process.env.MONGOHQ_URL || 'mongodb://localhost/mydb'
 mongoClient = mongo.MongoClient;
 
@@ -69,15 +70,41 @@ makeHTMLResponse = (msg, status) ->
     response += "</body></html>"
 
 
-loginAs = (username, password, res) ->
+loginAs = (mail, password, res) ->
     mongoClient.connect(mongoUri, (err, db) ->
         throw err if err
         collection = db.collection(USER_COLLECTION)
         createdNewUser = false
         uid = 0;
-        log "god username?"
-        log username
-        docs = collection.findOne({mail: username}, (err, item) ->
+        log mail
+        docs = collection.findOne({mail: mail}, (err, item) ->
+            throw err if err
+            log "Searching User"
+            log item
+            if item == null
+                # user not found.
+                # return
+                response = makeHTMLResponse("Not Found")
+                res.writeHead(404, {"Content-type": "text/html"});
+                res.end(response)
+            else
+                # found user
+                log item
+                log "User found, now authenticate"
+                uid = item.uid;
+                authenticate(uid, password, res)
+        ) # findOne done
+    )
+    return
+
+loginOrRegister = (mail, password, res) ->
+    mongoClient.connect(mongoUri, (err, db) ->
+        throw err if err
+        collection = db.collection(USER_COLLECTION)
+        createdNewUser = false
+        uid = 0;
+        log mail
+        docs = collection.findOne({mail: mail}, (err, item) ->
             throw err if err
             log "User finding?"
             log item
@@ -89,7 +116,7 @@ loginAs = (username, password, res) ->
                     newUser =
                        "uid": uid
                        "username": ""
-                       "mail": username # first register, email is uname
+                       "mail": mail 
                        "created": 1244
                        "lastLogin":0
                     collection.insert(newUser, (err, docs) ->
@@ -120,20 +147,21 @@ authenticate = (uid, password, res) ->
             if item != null
                 # found uid
                 if password == item.password
-                    response = makeHTMLResponse("Success")
+                    accessToken = uuid.v1()
+                    response = (accessToken)
                     res.writeHead(200,{"Content-type": "text/html"});
                     res.end(response)
-                    log "authenticate done with ok"
+                    log "authenticate success!"
                 else
-                    response = makeHTMLResponse("Failed")
+                    response = makeHTMLResponse("Login Denied")
                     res.writeHead(403 ,{"Content-type": "text/html"});
                     res.end(response)
-                    log "authenticate done with ng"
+                    log "authentication denied for wrong password"
             else
                 response = makeHTMLResponse("Not found")
                 res.writeHead(404 ,{"Content-type": "text/html"});
                 res.end(response)
-                log "cannot find uid"
+                log "Authentication defnied because user uid not found"
                 
         )
     )
@@ -204,13 +232,18 @@ server = http.createServer (req, res) ->
         getHandler(filepath, req, res);
     else if pathname == "/getCommand"
         getCommand(res)
+    else if pathname == "/loginOrRegister"
+        query = url.parse(req.url).query
+        params = querystring.parse(query)
+        mail = params.mail
+        password = params.password
+        loginOrRegister(mail, password, res);
     else if pathname == "/loginAs"
         query = url.parse(req.url).query
         params = querystring.parse(query)
-        username = params.mail
+        mail = params.mail
         password = params.password
-
-        loginAs(username, password, res);
+        loginAs(mail, password, res);
     else if pathname == "/search"
         res.writeHead(200, {"Content-type": "plain/text"})
     else
