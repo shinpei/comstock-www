@@ -9,7 +9,7 @@ uuid = require 'node-uuid'
 socketio = require 'socket.io'
 
 
-mongoUri = process.env.MONGOHQ_URL || 'mongodb://localhost/mydb'
+mongoUri = process.env.MONGOHQ_URL || 'mongodb://localhost/comstock-www-db'
 mongoClient = mongo.MongoClient;
 
 DOCROOT = "documents"
@@ -36,7 +36,7 @@ getHandler = (filepath, req, res) ->
         res.end(data);
     );
 
-postCommand = (command, user, date, desc) ->
+postCommand = (command, user, date) ->
     mongoClient.connect(mongoUri, (err, db) ->
         throw err if err
         collection = db.collection(DATA_COLLECTION)
@@ -228,8 +228,6 @@ server = http.createServer (req, res) ->
         query = url.parse(req.url).query
         params = querystring.parse(query);
         postCommand(params.command, params.user, params.date, params.desc);
-        filepath = DOCROOT + "/index.html"
-        getHandler(filepath, req, res);
     else if pathname == "/getCommand"
         getCommand(res)
     else if pathname == "/loginOrRegister"
