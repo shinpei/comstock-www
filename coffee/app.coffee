@@ -9,13 +9,13 @@ uuid = require 'node-uuid'
 socketio = require 'socket.io'
 
 
-mongoUri = process.env.MONGOHQ_URL || 'mongodb://localhost/comstock-www-db'
+mongoUri = process.env.MONGOHQ_URL || 'mongodb://localhost/comstock-www'
 mongoClient = mongo.MongoClient;
 
 DOCROOT = "documents"
 USER_COLLECTION = "user"
 AUTH_COLLECTION = "authinfo" # "auth" is reserve words for mongo client
-DATA_COLLECTION = "test"
+DATA_COLLECTION = "commands"
 
 getHandler = (filepath, req, res) ->
     fs.readFile(filepath, "utf-8", (err, data) ->
@@ -45,15 +45,15 @@ postCommand = (command, user, date) ->
 #        collection.remove ((err, result) ->
 #            throw err if err
 #            log "colelction cleared!"
-        oneData =
-            "id" : id
-            "user": user
-            "date": date
-            "data":
+        cmd = new Command()
+        cmd.id =  id
+        cmd.user = user
+        cmd.date = date;
+        cmd.data = 
                 "command": command
-                "desc" : desc
+                "desc" : ""
                
-        collection.insert(oneData, (err, docs) ->
+        collection.insert(cmd, (err, docs) ->
             throw err if err
             log "Just inserted, " + docs.length
             collection.find({}).toArray (err, docs) ->
@@ -197,21 +197,25 @@ writeAsHtml = (doc) ->
     output += "</div>"
     return output;
 
-getCommand = (res) ->
+listCommands = (res) ->
     mongoClient.connect(mongoUri, (err, db) ->
         throw err if err
-        collection = db.collection(COLLECTION_NAME)
-        response = '<html><head><!-- Loading Bootstrap --><link href="css/bootstrap.min.css" rel="stylesheet"><!-- Loading Flat UI --><link href="css/flat-ui.css" rel="stylesheet"><link href="css/demo.css" rel="stylesheet"></head><body>'
-        docs = collection.find({}, limit: 5)
+        collection = db.collection(DATA_COLLECTION)
+        docs = collection.find({}, limit: 100)
+        response = ""
+        responseObjs = []
         docs.each (err, doc) ->
             throw err if err
             if doc == null
                 res.writeHead(200, {"Content-type": "text/html"});
-                response += "</body></html>"
+                response = JSON.stringify responseObjs
                 log response
                 res.end(response);
                 return;
-            response += writeAsHtml(doc);
+            docObj =
+                Cmd : doc.data.command
+                Timestamp: doc.date
+            responseObjs.push(docObj)
         return
     )
 
@@ -228,8 +232,8 @@ server = http.createServer (req, res) ->
         query = url.parse(req.url).query
         params = querystring.parse(query);
         postCommand(params.command, params.user, params.date, params.desc);
-    else if pathname == "/getCommand"
-        getCommand(res)
+    else if pathname == "/list"
+        listCommands(res)
     else if pathname == "/loginOrRegister"
         query = url.parse(req.url).query
         params = querystring.parse(query)
