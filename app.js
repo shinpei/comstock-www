@@ -57,7 +57,7 @@
     });
   };
 
-  postCommand = function(command, user, date) {
+  postCommand = function(command, user, date, res) {
     return mongoClient.connect(mongoUri, function(err, db) {
       var cmd, collection, id;
       if (err) {
@@ -78,14 +78,10 @@
           throw err;
         }
         log("Just inserted, " + docs.length);
-        return collection.find({}).toArray(function(err, docs) {
-          if (err) {
-            throw err;
-          }
-          return docs.forEach(function(doc) {
-            return log("found document:" + doc.data.command);
-          });
+        res.writeHead(200, {
+          "Content-type": "text/html"
         });
+        return res.end();
       });
     });
   };
@@ -310,7 +306,7 @@
     } else if (pathname === "/postCommand") {
       query = url.parse(req.url).query;
       params = querystring.parse(query);
-      return postCommand(params.command, params.user, params.date, params.desc);
+      return postCommand(params.cmd, params.username, params.date, res);
     } else if (pathname === "/list") {
       return listCommands(res);
     } else if (pathname === "/loginOrRegister") {

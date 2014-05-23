@@ -36,7 +36,7 @@ getHandler = (filepath, req, res) ->
         res.end(data);
     );
 
-postCommand = (command, user, date) ->
+postCommand = (command, user, date, res) ->
     mongoClient.connect(mongoUri, (err, db) ->
         throw err if err
         collection = db.collection(DATA_COLLECTION)
@@ -56,10 +56,8 @@ postCommand = (command, user, date) ->
         collection.insert(cmd, (err, docs) ->
             throw err if err
             log "Just inserted, " + docs.length
-            collection.find({}).toArray (err, docs) ->
-                throw err if err
-                docs.forEach (doc) ->
-                      log "found document:" + doc.data.command
+            res.writeHead(200, {"Content-type": "text/html"});
+            res.end()
         )
     )
 
@@ -231,7 +229,7 @@ server = http.createServer (req, res) ->
     else if pathname == "/postCommand"
         query = url.parse(req.url).query
         params = querystring.parse(query);
-        postCommand(params.command, params.user, params.date, params.desc);
+        postCommand(params.cmd, params.username, params.date, res);
     else if pathname == "/list"
         listCommands(res)
     else if pathname == "/loginOrRegister"
