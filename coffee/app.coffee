@@ -16,6 +16,7 @@ DOCROOT = "documents"
 USER_COLLECTION = "user"
 AUTH_COLLECTION = "authinfo" # "auth" is reserve words for mongo client
 DATA_COLLECTION = "commands"
+SESSION_COLLECTION = "session"
 
 getHandler = (filepath, req, res) ->
     fs.readFile(filepath, "utf-8", (err, data) ->
@@ -68,19 +69,19 @@ makeHTMLResponse = (msg, status) ->
     response += "</body></html>"
 
 
-loginAs = (mail, password, res) ->
+
+loginAs = (user, password, res) ->
     mongoClient.connect(mongoUri, (err, db) ->
         throw err if err
         collection = db.collection(USER_COLLECTION)
         createdNewUser = false
         uid = 0;
-        log mail
-        docs = collection.findOne({mail: mail}, (err, item) ->
+        log user
+        docs = collection.findOne({mail: user.mail}, (err, item) ->
             throw err if err
             log "Searching User"
             log item
             if item == null
-                # user not found.
                 # return
                 response = makeHTMLResponse("Not Found")
                 res.writeHead(404, {"Content-type": "text/html"});
@@ -95,14 +96,14 @@ loginAs = (mail, password, res) ->
     )
     return
 
-loginOrRegister = (mail, password, res) ->
+loginOrRegister = (user, password, res) ->
     mongoClient.connect(mongoUri, (err, db) ->
         throw err if err
         collection = db.collection(USER_COLLECTION)
         createdNewUser = false
         uid = 0;
-        log mail
-        docs = collection.findOne({mail: mail}, (err, item) ->
+        log user
+        docs = collection.findOne({mail: user.mail}, (err, item) ->
             throw err if err
             log "User finding?"
             log item
@@ -110,17 +111,15 @@ loginOrRegister = (mail, password, res) ->
                 # cannot find user. register it
                 collection.find().count((err, count) ->
                     throw err if err
-                    uid = count + 1
-                    newUser =
-                       "uid": uid
-                       "username": ""
-                       "mail": mail 
-                       "created": 1244
-                       "lastLogin":0
-                    collection.insert(newUser, (err, docs) ->
+                    date = new Date();
+                    user.uid = count + 1
+                    user.created = date.getTime()
+                    user.lastLogin = date.getTime();
+                    
+                    collection.insert(user, (err, docs) ->
                         throw err if err
-                        log "uid is " + uid
-                        addAuthenticate(uid, password)
+                        log "uid is " + user.uid
+                        addAuthenticate(user.uid, password)
                         response = makeHTMLResponse("User added, thank you for registering", 200)
                         res.writeHead(200, {"Content-type": "text/html"});
                         res.end(response)
@@ -146,7 +145,8 @@ authenticate = (uid, password, res) ->
                 # found uid
                 if password == item.password
                     accessToken = uuid.v1()
-                    response = (accessToken)
+                    registerToken(db, uid, accessToken)
+                    response = accessToken
                     res.writeHead(200,{"Content-type": "text/html"});
                     res.end(response)
                     log "authenticate success!"
@@ -165,6 +165,13 @@ authenticate = (uid, password, res) ->
     )
     return 
 
+registerToken = (db, uid, token) ->
+    collection = db.collection(SESSION_COLLECTION)
+    ses = new Session(token, uid)
+    collection.insert(ses, (err, docs) ->
+        throw err if err
+    )
+    
 
 addAuthenticate = (uid, password) ->
     # add user-password to the db
@@ -175,6 +182,7 @@ addAuthenticate = (uid, password) ->
             "uid": uid
             "date": ""
             "password":password
+            
         collection.insert(oneData, (err, docs) ->
             throw err if err
         )
@@ -231,19 +239,22 @@ server = http.createServer (req, res) ->
         params = querystring.parse(query);
         postCommand(params.cmd, params.username, params.date, res);
     else if pathname == "/list"
+        
         listCommands(res)
     else if pathname == "/loginOrRegister"
         query = url.parse(req.url).query
         params = querystring.parse(query)
         mail = params.mail
         password = params.password
-        loginOrRegister(mail, password, res);
+        user = new User(mail, "", "")
+        loginOrRegister(user, password, res);
     else if pathname == "/loginAs"
         query = url.parse(req.url).query
         params = querystring.parse(query)
         mail = params.mail
         password = params.password
-        loginAs(mail, password, res);
+        user = new User(mail, "", "")
+        loginAs(user, password, res);
     else if pathname == "/search"
         res.writeHead(200, {"Content-type": "plain/text"})
     else
