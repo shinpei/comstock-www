@@ -69,7 +69,6 @@ makeHTMLResponse = (msg, status) ->
     response += "</body></html>"
 
 
-
 loginAs = (user, password, res) ->
     mongoClient.connect(mongoUri, (err, db) ->
         throw err if err
@@ -82,7 +81,7 @@ loginAs = (user, password, res) ->
             log "Searching User"
             log item
             if item == null
-                # return
+                # user not found
                 response = makeHTMLResponse("Not Found")
                 res.writeHead(404, {"Content-type": "text/html"});
                 res.end(response)
@@ -91,7 +90,19 @@ loginAs = (user, password, res) ->
                 log item
                 log "User found, now authenticate"
                 uid = item.uid;
-                authenticate(uid, password, res)
+                # check weather it's already logged in
+                collection = db.collection(SESSION_COLLECTION)
+                collection.findOne({uid: uid}, (err, item) ->
+                    throw err if err
+                    if item == null
+                        #Couldn't find user, proceed authenticate
+                        authenticate(uid, password, res)
+                    else
+                        #Already logged in, return "already loggedin"
+                        response = makeHTMLResponse("Conflict")
+                        res.writeHead(409, {"Content-type": "text/html"});
+                        res.end(response)
+                )
         ) # findOne done
     )
     return
@@ -115,7 +126,6 @@ loginOrRegister = (user, password, res) ->
                     user.uid = count + 1
                     user.created = date.getTime()
                     user.lastLogin = date.getTime();
-                    
                     collection.insert(user, (err, docs) ->
                         throw err if err
                         log "uid is " + user.uid
@@ -160,18 +170,19 @@ authenticate = (uid, password, res) ->
                 res.writeHead(404 ,{"Content-type": "text/html"});
                 res.end(response)
                 log "Authentication defnied because user uid not found"
-                
         )
     )
-    return 
+
 
 registerToken = (db, uid, token) ->
     collection = db.collection(SESSION_COLLECTION)
     ses = new Session(token, uid)
+    log "Registering session" + ses.token
+
     collection.insert(ses, (err, docs) ->
         throw err if err
     )
-    
+
 
 addAuthenticate = (uid, password) ->
     # add user-password to the db
@@ -182,7 +193,7 @@ addAuthenticate = (uid, password) ->
             "uid": uid
             "date": ""
             "password":password
-            
+
         collection.insert(oneData, (err, docs) ->
             throw err if err
         )
@@ -203,25 +214,43 @@ writeAsHtml = (doc) ->
     output += "</div>"
     return output;
 
-listCommands = (res) ->
+listCommands = (authinfo, res) ->
+    log "trying list commands"
     mongoClient.connect(mongoUri, (err, db) ->
         throw err if err
-        collection = db.collection(DATA_COLLECTION)
-        docs = collection.find({}, limit: 100)
-        response = ""
-        responseObjs = []
-        docs.each (err, doc) ->
+        log "mongo connected"
+        collection = db.collection(SESSION_COLLECTION)
+        doc = collection.findOne({authinfo: authinfo}, (err, item) ->
+            log "find authinfo from session" + authinfo
             throw err if err
-            if doc == null
-                res.writeHead(200, {"Content-type": "text/html"});
-                response = JSON.stringify responseObjs
-                log response
-                res.end(response);
-                return;
-            docObj =
-                Cmd : doc.data.command
-                Timestamp: doc.date
-            responseObjs.push(docObj)
+            if item == null
+                # not found
+                log "authinfo not found, means, hasn't login"
+                response = "Hasn't login yet"
+                res.writeHead(404, {"Content-type": "text/html"});
+                res.end(response)
+            else
+                # found session, continue
+                log "session found!"
+                collection = db.collection(DATA_COLLECTION)
+                docs = collection.find({}, limit: 100)
+                response = ""
+                responseObjs = []
+                docs.each (err, doc) ->
+                    throw err if err
+                    if doc == null
+                        res.writeHead(200, {"Content-type": "text/html"});
+                        response = JSON.stringify responseObjs
+                        log response
+                        res.end(response);
+                        return;
+                    docObj =
+                        Cmd : doc.data.command
+                        Timestamp: doc.date
+                    responseObjs.push(docObj)
+
+            return
+        )
         return
     )
 
@@ -239,8 +268,10 @@ server = http.createServer (req, res) ->
         params = querystring.parse(query);
         postCommand(params.cmd, params.username, params.date, res);
     else if pathname == "/list"
-        
-        listCommands(res)
+        query = url.parse(req.url).query
+        params = querystring.parse(query)
+        authinfo = params.authinfo
+        listCommands(authinfo, res)
     else if pathname == "/loginOrRegister"
         query = url.parse(req.url).query
         params = querystring.parse(query)
@@ -262,22 +293,7 @@ server = http.createServer (req, res) ->
         getHandler(filepath, req, res);
         return;
 
-## io = socketio.listen(server);
 port = process.env.PORT || 5000;
 server.listen(port, ->
     log "http server listening on port " + server.address().port;
 )
-
-###
-io.configure ->
-    io.set("transports", ["xhr-polling"]);
-    io.set("polling duration", 10);
-
-
-io.sockets.on('connection', (socket) ->
-    socket.on('fetchCommands', (data) ->
-        commandData = getCommnad();
-        io.sockets.emit('recvCommand', {data: commandData});
-    )
-)
-###

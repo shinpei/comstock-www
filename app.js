@@ -124,7 +124,23 @@
           log(item);
           log("User found, now authenticate");
           uid = item.uid;
-          return authenticate(uid, password, res);
+          collection = db.collection(SESSION_COLLECTION);
+          return collection.findOne({
+            uid: uid
+          }, function(err, item) {
+            if (err) {
+              throw err;
+            }
+            if (item === null) {
+              return authenticate(uid, password, res);
+            } else {
+              response = makeHTMLResponse("Conflict");
+              res.writeHead(409, {
+                "Content-type": "text/html"
+              });
+              return res.end(response);
+            }
+          });
         }
       });
     });
@@ -184,7 +200,7 @@
 
   authenticate = function(uid, password, res) {
     log("Authentication process got uid=" + uid);
-    mongoClient.connect(mongoUri, function(err, db) {
+    return mongoClient.connect(mongoUri, function(err, db) {
       var collection, docs;
       if (err) {
         throw err;
@@ -228,6 +244,7 @@
     var collection, ses;
     collection = db.collection(SESSION_COLLECTION);
     ses = new Session(token, uid);
+    log("Registering session" + ses.token);
     return collection.insert(ses, function(err, docs) {
       if (err) {
         throw err;
@@ -269,43 +286,65 @@
     return output;
   };
 
-  listCommands = function(res) {
+  listCommands = function(authinfo, res) {
+    log("trying list commands");
     return mongoClient.connect(mongoUri, function(err, db) {
-      var collection, docs, response, responseObjs;
+      var collection, doc;
       if (err) {
         throw err;
       }
-      collection = db.collection(DATA_COLLECTION);
-      docs = collection.find({}, {
-        limit: 100
-      });
-      response = "";
-      responseObjs = [];
-      docs.each(function(err, doc) {
-        var docObj;
+      log("mongo connected");
+      collection = db.collection(SESSION_COLLECTION);
+      doc = collection.findOne({
+        authinfo: authinfo
+      }, function(err, item) {
+        var docs, response, responseObjs;
+        log("find authinfo from session" + authinfo);
         if (err) {
           throw err;
         }
-        if (doc === null) {
-          res.writeHead(200, {
+        if (item === null) {
+          log("authinfo not found, means, hasn't login");
+          response = "Hasn't login yet";
+          res.writeHead(404, {
             "Content-type": "text/html"
           });
-          response = JSON.stringify(responseObjs);
-          log(response);
           res.end(response);
-          return;
+        } else {
+          log("session found!");
+          collection = db.collection(DATA_COLLECTION);
+          docs = collection.find({}, {
+            limit: 100
+          });
+          response = "";
+          responseObjs = [];
+          docs.each(function(err, doc) {
+            var docObj;
+            if (err) {
+              throw err;
+            }
+            if (doc === null) {
+              res.writeHead(200, {
+                "Content-type": "text/html"
+              });
+              response = JSON.stringify(responseObjs);
+              log(response);
+              res.end(response);
+              return;
+            }
+            docObj = {
+              Cmd: doc.data.command,
+              Timestamp: doc.date
+            };
+            return responseObjs.push(docObj);
+          });
         }
-        docObj = {
-          Cmd: doc.data.command,
-          Timestamp: doc.date
-        };
-        return responseObjs.push(docObj);
       });
     });
   };
 
   server = http.createServer(function(req, res) {
-    var filepath, isIgnore, mail, params, password, pathname, query, user;
+    var authinfo, filepath, isIgnore, mail, params, password, pathname, query, user;
     filepath = '';
     isIgnore = false;
     pathname = url.parse(req.url).pathname;
@@ -318,7 +357,10 @@
       params = querystring.parse(query);
       return postCommand(params.cmd, params.username, params.date, res);
     } else if (pathname === "/list") {
-      return listCommands(res);
+      query = url.parse(req.url).query;
+      params = querystring.parse(query);
+      authinfo = params.authinfo;
+      return listCommands(authinfo, res);
     } else if (pathname === "/loginOrRegister") {
       query = url.parse(req.url).query;
       params = querystring.parse(query);
@@ -349,21 +391,6 @@
     return log("http server listening on port " + server.address().port);
   });
 
-
-  /*
-  io.configure ->
-      io.set("transports", ["xhr-polling"]);
-      io.set("polling duration", 10);
-  
-  
-  io.sockets.on('connection', (socket) ->
-      socket.on('fetchCommands', (data) ->
-          commandData = getCommnad();
-          io.sockets.emit('recvCommand', {data: commandData});
-      )
-  )
-   */
-
   Command = (function() {
     function Command() {}
 
@@ -383,16 +410,14 @@
   })();
 
   Session = (function() {
-    function Session() {}
-
     Session.prototype["token"] = "";
 
     Session.prototype["uid"] = 0;
 
-    Session.prototype.initialize = function(token, uid) {
+    function Session(token, uid) {
       this.token = token;
-      return this.uid = uid;
-    };
+      this.uid = uid;
+    }
 
     return Session;
 

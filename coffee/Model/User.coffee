@@ -5,7 +5,7 @@ class User
     "created": ""
     "lastLogin" : ""
     
-    initialize: (mail,  username, uid)->
+    constructor: (mail,  username, uid)->
         @mail = mail
         @username = username
         @uid = uid
