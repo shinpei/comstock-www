@@ -59,31 +59,49 @@
     });
   };
 
-  postCommand = function(command, user, date, res) {
+  postCommand = function(token, command, user, date, res) {
     return mongoClient.connect(mongoUri, function(err, db) {
-      var cmd, collection, id;
+      var collection, doc;
       if (err) {
         throw err;
       }
-      collection = db.collection(DATA_COLLECTION);
-      id = uuid.v1();
-      cmd = new Command();
-      cmd.id = id;
-      cmd.user = user;
-      cmd.date = date;
-      cmd.data = {
-        "command": command,
-        "desc": ""
-      };
-      return collection.insert(cmd, function(err, docs) {
+      collection = db.collection(SESSION_COLLECTION);
+      return doc = collection.findOne({
+        token: token
+      }, function(err, item) {
+        var cmd, id, response;
         if (err) {
           throw err;
         }
-        log("Just inserted, " + docs.length);
-        res.writeHead(200, {
-          "Content-type": "text/html"
-        });
-        return res.end();
+        if (item === null) {
+          log("token not found, means, hasn't login");
+          response = "Hasn't login yet";
+          res.writeHead(404, {
+            "Content-type": "text/html"
+          });
+          return res.end(response);
+        } else {
+          collection = db.collection(DATA_COLLECTION);
+          id = uuid.v1();
+          cmd = new Command();
+          cmd.id = id;
+          cmd.user = user;
+          cmd.date = date;
+          cmd.data = {
+            "command": command,
+            "desc": ""
+          };
+          return collection.insert(cmd, function(err, docs) {
+            if (err) {
+              throw err;
+            }
+            log("Just inserted, " + docs.length);
+            res.writeHead(200, {
+              "Content-type": "text/html"
+            });
+            return res.end();
+          });
+        }
       });
     });
   };
@@ -286,8 +304,7 @@
     return output;
   };
 
-  listCommands = function(authinfo, res) {
-    log("trying list commands");
+  listCommands = function(token, res) {
     return mongoClient.connect(mongoUri, function(err, db) {
       var collection, doc;
       if (err) {
@@ -296,15 +313,14 @@
       log("mongo connected");
       collection = db.collection(SESSION_COLLECTION);
       doc = collection.findOne({
-        authinfo: authinfo
+        token: token
       }, function(err, item) {
         var docs, response, responseObjs;
-        log("find authinfo from session" + authinfo);
         if (err) {
           throw err;
         }
         if (item === null) {
-          log("authinfo not found, means, hasn't login");
+          log("token not found, means, hasn't login");
           response = "Hasn't login yet";
           res.writeHead(404, {
             "Content-type": "text/html"
@@ -344,7 +360,7 @@
   };
 
   server = http.createServer(function(req, res) {
-    var authinfo, filepath, isIgnore, mail, params, password, pathname, query, user;
+    var filepath, isIgnore, mail, params, password, pathname, query, token, user;
     filepath = '';
     isIgnore = false;
     pathname = url.parse(req.url).pathname;
@@ -355,12 +371,13 @@
     } else if (pathname === "/postCommand") {
       query = url.parse(req.url).query;
       params = querystring.parse(query);
-      return postCommand(params.cmd, params.username, params.date, res);
+      token = params.authinfo;
+      return postCommand(token, params.cmd, params.username, params.date, res);
     } else if (pathname === "/list") {
       query = url.parse(req.url).query;
       params = querystring.parse(query);
-      authinfo = params.authinfo;
-      return listCommands(authinfo, res);
+      token = params.authinfo;
+      return listCommands(token, res);
     } else if (pathname === "/loginOrRegister") {
       query = url.parse(req.url).query;
       params = querystring.parse(query);
@@ -424,8 +441,6 @@
   })();
 
   User = (function() {
-    function User() {}
-
     User.prototype["mail"] = "";
 
     User.prototype["username"] = "";
@@ -436,11 +451,11 @@
 
     User.prototype["lastLogin"] = "";
 
-    User.prototype.initialize = function(mail, username, uid) {
+    function User(mail, username, uid) {
       this.mail = mail;
       this.username = username;
-      return this.uid = uid;
-    };
+      this.uid = uid;
+    }
 
     return User;
 

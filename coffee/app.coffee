@@ -37,37 +37,42 @@ getHandler = (filepath, req, res) ->
         res.end(data);
     );
 
-postCommand = (command, user, date, res) ->
+postCommand = (token, command, user, date, res) ->
     mongoClient.connect(mongoUri, (err, db) ->
         throw err if err
-        collection = db.collection(DATA_COLLECTION)
-#        log 'removing documents'
-        id = uuid.v1()
-#        collection.remove ((err, result) ->
-#            throw err if err
-#            log "colelction cleared!"
-        cmd = new Command()
-        cmd.id =  id
-        cmd.user = user
-        cmd.date = date;
-        cmd.data = 
-                "command": command
-                "desc" : ""
-               
-        collection.insert(cmd, (err, docs) ->
+        collection = db.collection(SESSION_COLLECTION)
+        doc = collection.findOne({token: token}, (err, item) ->
             throw err if err
-            log "Just inserted, " + docs.length
-            res.writeHead(200, {"Content-type": "text/html"});
-            res.end()
+            if item == null
+                # not found
+                log "token not found, means, hasn't login"
+                response = "Hasn't login yet"
+                res.writeHead(404, {"Content-type": "text/html"})
+                res.end(response)
+            else
+                collection = db.collection(DATA_COLLECTION)
+                id = uuid.v1()
+                cmd = new Command()
+                cmd.id =  id
+                cmd.user = user
+                cmd.date = date;
+                cmd.data = 
+                        "command": command
+                        "desc" : ""
+                       
+                collection.insert(cmd, (err, docs) ->
+                    throw err if err
+                    log "Just inserted, " + docs.length
+                    res.writeHead(200, {"Content-type": "text/html"});
+                    res.end()
+                )
         )
-    )
-
+)
 
 makeHTMLResponse = (msg, status) ->
     response = '<html><head><!-- Loading Bootstrap --><link href="css/bootstrap.min.css" rel="stylesheet"><!-- Loading Flat UI --><link href="css/flat-ui.css" rel="stylesheet"><link href="css/demo.css" rel="stylesheet"></head><body>'
     response += msg
     response += "</body></html>"
-
 
 loginAs = (user, password, res) ->
     mongoClient.connect(mongoUri, (err, db) ->
@@ -214,18 +219,16 @@ writeAsHtml = (doc) ->
     output += "</div>"
     return output;
 
-listCommands = (authinfo, res) ->
-    log "trying list commands"
+listCommands = (token, res) ->
     mongoClient.connect(mongoUri, (err, db) ->
         throw err if err
         log "mongo connected"
         collection = db.collection(SESSION_COLLECTION)
-        doc = collection.findOne({authinfo: authinfo}, (err, item) ->
-            log "find authinfo from session" + authinfo
+        doc = collection.findOne({token: token}, (err, item) ->
             throw err if err
             if item == null
                 # not found
-                log "authinfo not found, means, hasn't login"
+                log "token not found, means, hasn't login"
                 response = "Hasn't login yet"
                 res.writeHead(404, {"Content-type": "text/html"});
                 res.end(response)
@@ -266,12 +269,13 @@ server = http.createServer (req, res) ->
     else if pathname == "/postCommand"
         query = url.parse(req.url).query
         params = querystring.parse(query);
-        postCommand(params.cmd, params.username, params.date, res);
+        token = params.authinfo
+        postCommand(token, params.cmd, params.username, params.date, res);
     else if pathname == "/list"
         query = url.parse(req.url).query
         params = querystring.parse(query)
-        authinfo = params.authinfo
-        listCommands(authinfo, res)
+        token = params.authinfo
+        listCommands(token, res)
     else if pathname == "/loginOrRegister"
         query = url.parse(req.url).query
         params = querystring.parse(query)
