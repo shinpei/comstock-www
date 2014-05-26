@@ -1,6 +1,6 @@
 class Command
     "id": ""
-    "user" : ""
+    "uid": ""
     "date": ""
     "data":
         "command": ""

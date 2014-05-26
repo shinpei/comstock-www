@@ -59,7 +59,7 @@
     });
   };
 
-  postCommand = function(token, command, user, date, res) {
+  postCommand = function(token, command, date, res) {
     return mongoClient.connect(mongoUri, function(err, db) {
       var collection, doc;
       if (err) {
@@ -69,7 +69,7 @@
       return doc = collection.findOne({
         token: token
       }, function(err, item) {
-        var cmd, id, response;
+        var cmd, id, response, uid;
         if (err) {
           throw err;
         }
@@ -81,11 +81,12 @@
           });
           return res.end(response);
         } else {
+          uid = item.uid;
           collection = db.collection(DATA_COLLECTION);
           id = uuid.v1();
           cmd = new Command();
           cmd.id = id;
-          cmd.user = user;
+          cmd.uid = uid;
           cmd.date = date;
           cmd.data = {
             "command": command,
@@ -122,7 +123,6 @@
       collection = db.collection(USER_COLLECTION);
       createdNewUser = false;
       uid = 0;
-      log(user);
       return docs = collection.findOne({
         mail: user.mail
       }, function(err, item) {
@@ -173,7 +173,6 @@
       collection = db.collection(USER_COLLECTION);
       createdNewUser = false;
       uid = 0;
-      log(user);
       return docs = collection.findOne({
         mail: user.mail
       }, function(err, item) {
@@ -329,7 +328,9 @@
         } else {
           log("session found!");
           collection = db.collection(DATA_COLLECTION);
-          docs = collection.find({}, {
+          docs = collection.find({
+            uid: item.uid
+          }, {
             limit: 100
           });
           response = "";
@@ -372,7 +373,7 @@
       query = url.parse(req.url).query;
       params = querystring.parse(query);
       token = params.authinfo;
-      return postCommand(token, params.cmd, params.username, params.date, res);
+      return postCommand(token, params.cmd, params.date, res);
     } else if (pathname === "/list") {
       query = url.parse(req.url).query;
       params = querystring.parse(query);
@@ -413,7 +414,7 @@
 
     Command.prototype["id"] = "";
 
-    Command.prototype["user"] = "";
+    Command.prototype["uid"] = "";
 
     Command.prototype["date"] = "";
 

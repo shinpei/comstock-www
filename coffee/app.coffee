@@ -37,7 +37,7 @@ getHandler = (filepath, req, res) ->
         res.end(data);
     );
 
-postCommand = (token, command, user, date, res) ->
+postCommand = (token, command, date, res) ->
     mongoClient.connect(mongoUri, (err, db) ->
         throw err if err
         collection = db.collection(SESSION_COLLECTION)
@@ -50,11 +50,12 @@ postCommand = (token, command, user, date, res) ->
                 res.writeHead(404, {"Content-type": "text/html"})
                 res.end(response)
             else
+                uid = item.uid
                 collection = db.collection(DATA_COLLECTION)
                 id = uuid.v1()
                 cmd = new Command()
                 cmd.id =  id
-                cmd.user = user
+                cmd.uid = uid
                 cmd.date = date;
                 cmd.data = 
                         "command": command
@@ -80,7 +81,6 @@ loginAs = (user, password, res) ->
         collection = db.collection(USER_COLLECTION)
         createdNewUser = false
         uid = 0;
-        log user
         docs = collection.findOne({mail: user.mail}, (err, item) ->
             throw err if err
             log "Searching User"
@@ -118,7 +118,6 @@ loginOrRegister = (user, password, res) ->
         collection = db.collection(USER_COLLECTION)
         createdNewUser = false
         uid = 0;
-        log user
         docs = collection.findOne({mail: user.mail}, (err, item) ->
             throw err if err
             log "User finding?"
@@ -236,7 +235,7 @@ listCommands = (token, res) ->
                 # found session, continue
                 log "session found!"
                 collection = db.collection(DATA_COLLECTION)
-                docs = collection.find({}, limit: 100)
+                docs = collection.find({uid: item.uid }, limit: 100)
                 response = ""
                 responseObjs = []
                 docs.each (err, doc) ->
@@ -270,7 +269,7 @@ server = http.createServer (req, res) ->
         query = url.parse(req.url).query
         params = querystring.parse(query);
         token = params.authinfo
-        postCommand(token, params.cmd, params.username, params.date, res);
+        postCommand(token, params.cmd, params.date, res);
     else if pathname == "/list"
         query = url.parse(req.url).query
         params = querystring.parse(query)
