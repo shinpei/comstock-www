@@ -265,32 +265,33 @@ server = express.createServer (req, res) ->
     basename = path.basename(req.url) || 'index.html'
     dirname = path.dirname(req.url)
     if dirname == "/"
-        dirname = "" # reset it 
-    if pathname == "/postCommand"
+        dirname = "" # reset it
+    log basename 
+    if basename.indexOf("postCommand") == 0
         query = url.parse(req.url).query
         params = querystring.parse(query);
         token = params.authinfo
         postCommand(token, params.cmd, params.date, res);
-    else if pathname == "/list"
+    else if basename.indexOf("list") == 0
         query = url.parse(req.url).query
         params = querystring.parse(query)
         token = params.authinfo
         listCommands(token, res)
-    else if pathname == "/loginOrRegister"
+    else if basename.indexOf("loginOrRegister") == 0
         query = url.parse(req.url).query
         params = querystring.parse(query)
         mail = params.mail
         password = params.password
         user = new User(mail, "", "")
         loginOrRegister(user, password, res);
-    else if pathname == "/loginAs"
+    else if basename.indexOf("loginAs") == 0
         query = url.parse(req.url).query
         params = querystring.parse(query)
         mail = params.mail
         password = params.password
         user = new User(mail, "", "")
         loginAs(user, password, res);
-    else if pathname == "/search"
+    else if basename.indexOf("search") == 0
         res.writeHead(200, {"Content-type": "plain/text"})
     else
         pathname = dirname + "/" + basename

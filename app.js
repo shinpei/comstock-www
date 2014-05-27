@@ -374,31 +374,32 @@
     if (dirname === "/") {
       dirname = "";
     }
-    if (pathname === "/postCommand") {
+    log(basename);
+    if (basename.indexOf("postCommand") === 0) {
       query = url.parse(req.url).query;
       params = querystring.parse(query);
       token = params.authinfo;
       return postCommand(token, params.cmd, params.date, res);
-    } else if (pathname === "/list") {
+    } else if (basename.indexOf("list") === 0) {
       query = url.parse(req.url).query;
       params = querystring.parse(query);
       token = params.authinfo;
       return listCommands(token, res);
-    } else if (pathname === "/loginOrRegister") {
+    } else if (basename.indexOf("loginOrRegister") === 0) {
       query = url.parse(req.url).query;
       params = querystring.parse(query);
       mail = params.mail;
       password = params.password;
       user = new User(mail, "", "");
       return loginOrRegister(user, password, res);
-    } else if (pathname === "/loginAs") {
+    } else if (basename.indexOf("loginAs") === 0) {
       query = url.parse(req.url).query;
       params = querystring.parse(query);
       mail = params.mail;
       password = params.password;
       user = new User(mail, "", "");
       return loginAs(user, password, res);
-    } else if (pathname === "/search") {
+    } else if (basename.indexOf("search") === 0) {
       return res.writeHead(200, {
         "Content-type": "plain/text"
       });
