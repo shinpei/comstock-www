@@ -5,10 +5,6 @@
 .container {
   max-width: 970px !important;
 }
-.demo-headline {
-  padding: 73px 0 73px;
-  text-align: center;
-}
 .demo-logo {
   font: 800 80px/80px "Helvetica Neue", Helvetica, Arial, sans-serif;
   letter-spacing: -2px;
