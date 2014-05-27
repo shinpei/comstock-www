@@ -6,8 +6,8 @@ url = require 'url'
 S = require 'string'
 querystring = require 'querystring'
 uuid = require 'node-uuid'
-socketio = require 'socket.io'
-
+express = require 'express'
+path = require 'path'
 
 mongoUri = process.env.MONGOHQ_URL || 'mongodb://localhost/comstock-www'
 mongoClient = mongo.MongoClient;
@@ -18,24 +18,28 @@ AUTH_COLLECTION = "authinfo" # "auth" is reserve words for mongo client
 DATA_COLLECTION = "commands"
 SESSION_COLLECTION = "session"
 
+mineTypes =
+    ".html" : "text/html"
+    ".css" : "text/css"
+    ".js" : "application/javascript"
+    ".png" : "image/png"
+    ".gif": "image/gif"
+    ".ico" : "image/x-icon"
+    ".jpg": "image/jpeg"
+    
 getHandler = (filepath, req, res) ->
-    fs.readFile(filepath, "utf-8", (err, data) ->
-        throw err if err
-        header =
-            "Content-type" : ""
-        if S(filepath).endsWith(".css")
-            header["Content-type"] = "text/css";
-        else if S(filepath).endsWith(".html")
-            header["Content-type"] = "text/html"
-        else if S(filepath).endsWith(".js")
-            header["Content-type"] = "application/javascript"
-        else if S(filepath).endsWith(".ico")
-            header["Content-type"] = "image/x-icon"
-        else if S(filepath).endsWith("png")
-            header["Conent-type"] = "image/png"
-        res.writeHead(200, header);
-        res.end(data);
-    );
+    fs.exists(filepath, (exists) ->
+        if exists
+            fs.readFile(filepath, (err, data) ->
+                throw err if err
+                ext = path.extname(filepath)
+                header =
+                    "Content-type" : mineTypes[ext]
+                    "Content-length" : data.length
+                res.writeHead(200, header)
+                res.end(data);
+            );
+    )
 
 postCommand = (token, command, date, res) ->
     mongoClient.connect(mongoUri, (err, db) ->
@@ -104,7 +108,7 @@ loginAs = (user, password, res) ->
                         authenticate(uid, password, res)
                     else
                         #Already logged in, return "already loggedin"
-                        response = makeHTMLResponse("Conflict")
+                        response = item.token
                         res.writeHead(409, {"Content-type": "text/html"});
                         res.end(response)
                 )
@@ -209,7 +213,6 @@ addAuthenticate = (uid, password) ->
 
 writeAsHtml = (doc) ->
     log "Logging.."
-    log doc
     output = ""
     output += "<div class='commandContain'>"
     output += '<pre class="prettyprint">' + doc.data.command + "</pre>";
@@ -256,16 +259,14 @@ listCommands = (token, res) ->
         return
     )
 
-        
-server = http.createServer (req, res) ->
-    filepath = ''
+                        
+server = express.createServer (req, res) ->
     isIgnore = false;
-    pathname = url.parse(req.url).pathname;
-    log "pathname=" + pathname
-    if pathname == '/'
-        filepath = DOCROOT + "/index.html"
-        getHandler(filepath, req, res);
-    else if pathname == "/postCommand"
+    basename = path.basename(req.url) || 'index.html'
+    dirname = path.dirname(req.url)
+    if dirname == "/"
+        dirname = "" # reset it 
+    if pathname == "/postCommand"
         query = url.parse(req.url).query
         params = querystring.parse(query);
         token = params.authinfo
@@ -292,8 +293,10 @@ server = http.createServer (req, res) ->
     else if pathname == "/search"
         res.writeHead(200, {"Content-type": "plain/text"})
     else
-        filepath = DOCROOT + req.url;
-        getHandler(filepath, req, res);
+        pathname = dirname + "/" + basename
+        pathname = DOCROOT +  pathname;
+        log "pathname: " + pathname
+        getHandler(pathname, req, res);
         return;
 
 port = process.env.PORT || 5000;

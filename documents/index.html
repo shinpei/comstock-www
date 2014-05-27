@@ -4,37 +4,48 @@
 <meta charset="utf-8">
 <title>Comstock</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="css/comstock.css" rel="stylesheet">
 <link href="css/flat-ui.css" rel="stylesheet">
-<link href="css/demo.css" rel="stylesheet">
+<link href="css/animate.css" rel="stylesheet">
+
 
 
 <body>
 <center>
-<h2>Comstock</h2>
+<div class="wow fadeInDown">
+<img src="images/logo.png">
+</div>
+<div class="wow fadeInRight">
 <small>Stock your command to the cloud</small>
+</div>
 <p>
+<div class="wow fadeInLeft">
 <form id="loginform" action="loginOrRegister" method="GET">
 <input type="text" name="mail" value placeholder="Email/username" class="form-control"></input>
 <input type="text" name="password" value placeholder="password" class="form-control"></input>
-
+<p>
 <p><a class="btn btn-primary" onclick="$('#loginform').submit()">register</a>
 </form>
+</div>
 </center>
 
-<div class="container">
 
+<div class="container wow fadeIn">
 <h4>Install</h4>
 <pre class="prettyprint lang-sh">
 $ go get github.com/shinpei/comstock
 </pre>
+</div>
 
+<div class="container wow fadeIn">
 <h4>Setup</h4>
 <pre class="prettyprint lang-sh">
 $ comstock
 Compath doesn't exists, will you create dir? [Y/n]:
 Create compath as '/home/yourname/.comstock'
 </pre>
-
+</div>
+<div class="container wow fadeIn">
 <h4>Login</h4>
 <pre class="prettyprint">
 $ comstock login
@@ -42,12 +53,16 @@ Your registered email address? : shinpei@githuxx.com
 And password? :
 Knock konck... success!
 </pre>
+
+<div class="container wow fadeIn">
 <h4>Stock your command </h4>
 <pre class="prettyprint lang-sh">
 $ coffee -c -O . hoge.coffee
 $ comstock save # save former command to comstock
 </pre>
+</div>
 
+<div class="container wow fadeIn">
 <h4>Fecth your command</h4>
 <pre class="prettyprint">
 $ comstock list
@@ -62,5 +77,9 @@ $ comstock run 1 # or you can use 'comstock get 1' and copy and paste it
     </footer>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
 <script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js?skin=desert"></script>
+<script src="js/wow.min.js"></script>
+<script>
+ new WOW().init();
+</script>
 </body>
 </html>
