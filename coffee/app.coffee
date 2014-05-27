@@ -6,7 +6,6 @@ url = require 'url'
 S = require 'string'
 querystring = require 'querystring'
 uuid = require 'node-uuid'
-express = require 'express'
 path = require 'path'
 
 mongoUri = process.env.MONGOHQ_URL || 'mongodb://localhost/comstock-www'
@@ -260,7 +259,7 @@ listCommands = (token, res) ->
     )
 
                         
-server = express.createServer (req, res) ->
+server = http.createServer (req, res) ->
     isIgnore = false;
     basename = path.basename(req.url) || 'index.html'
     dirname = path.dirname(req.url)
