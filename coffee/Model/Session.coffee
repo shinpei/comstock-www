@@ -7,7 +7,7 @@ class Session
         @token = token
         @uid = uid
         date = new Date();
-        #exp = date.getTime() + 10800 # 3hours
-        exp = date.getTime() + 1 # 3hours
+        exp = date.getTime() + 10800000 # 3hours
+        #exp = date.getTime() + 1 # 3hours
         @expires = exp
         return

@@ -237,7 +237,7 @@ listCommands = (token, res) ->
         doc = collection.findOne({token: token}, (err, item) ->
             throw err if err
             if item == null
-                # not found
+                # session not found
                 log "token not found, means, hasn't login"
                 response = "Hasn't login yet"
                 res.writeHead(403, {"Content-type": "text/html"});
@@ -275,37 +275,58 @@ listCommands = (token, res) ->
         return
     )
 
-fetchCommandForNumber = (token, num, res) ->
+fetchCommandFromNumber = (token, num, res) ->
     mongoClient.connect(mongoUri, (err, db) ->
         throw err if err
         collection = db.collection(SESSION_COLLECTION)
+
         doc = collection.findOne({token: token}, (err, item) ->
             throw err if err
             if item == null
                 #session not found
+                log "session not found"
                 response = "Hasn't login yet"
-                res.writeHead(404, {"Content-type" : "text/html"})
+                res.writeHead(403 , {"Content-type" : "text/html"}) #403=forbidden
                 res.end(response)
             else
-                # session found, continue
+                dateobj = new Date();
+                if item.expires < dateobj.getTime()
+                    # session expires
+                    response = "Session expires, please login again"
+                    res.writeHead(500, {"Content-type": "text/html"})
+                    res.end(response)
+                    cleanupSession(db, collection, token)
+                    return
+                else
                     collection = db.collection(DATA_COLLECTION)
                     docs = collection.find({uid: item.uid}, limit: 100)
                     response = ""
-                    responseobjs = []
-                    docs.each(err, doc) ->
+                    responseObjs = []
+                    idx = 0
+                    docObj = null
+                    docs.each (err, doc) ->
                         throw err if err
                         if doc == null
-                            res.writeHead(200, {"Content-type": "text/html"})
-                            response = JSON.stringify responseObjs
-                            res.end(response)
+                            res.writeHead(404, {"Content-type":"text/html"})
+                            res.end("Not found")
                             return;
+                        idx++
+                        if idx == num
+                            docObj =
+                                Cmd: doc.data.command
+                                Timestamp: doc.date
+                            res.writeHead(200, {"Content-type": "text/html"})
+                            responseObjs.push(docObj)
+                            response = JSON.stringify responseObjs
+                            
+                            res.end(response)
+
         )
     )
 
 cleanupSession = (db, collection, token) ->
     collection.remove({token: token}, (err, item) ->
         throw err if err
-        log item
         db.close()
     )
         
@@ -343,13 +364,14 @@ server = http.createServer (req, res) ->
         user = new User(mail, "", "")
         loginAs(user, password, res);
     else if basename.indexOf("search") == 0
-        res.writeHead(200, {"Content-type": "plain/text"})
-    else if basename.indexOf("fetchCommandForNumber") == 0
+         res.writeHead(200, {"Content-type": "plain/text"})
+    else if basename.indexOf("fetchCommandFromNumber") == 0
         query = url.parse(req.url).query
         params = querystring.parse(query)
-        token = params.token
-        number = params.number
-        fetchCommandForNumber(token, number, res)
+        token = params.authinfo
+        number = parseInt params.number
+        log "number=" + number
+        fetchCommandFromNumber(token, number, res)
     else
         pathname = dirname + "/" + basename
         pathname = DOCROOT +  pathname;
