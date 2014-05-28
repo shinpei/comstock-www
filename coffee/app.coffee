@@ -53,23 +53,35 @@ postCommand = (token, command, date, res) ->
                 res.writeHead(404, {"Content-type": "text/html"})
                 res.end(response)
             else
-                uid = item.uid
-                collection = db.collection(DATA_COLLECTION)
-                id = uuid.v1()
-                cmd = new Command()
-                cmd.id =  id
-                cmd.uid = uid
-                cmd.date = date;
-                cmd.data = 
-                        "command": command
-                        "desc" : ""
-                       
-                collection.insert(cmd, (err, docs) ->
-                    throw err if err
-                    log "Just inserted, " + docs.length
-                    res.writeHead(200, {"Content-type": "text/html"});
-                    res.end()
-                )
+                dateobj = new Date();
+                if item.expires < dateobj.getTime()
+                    # session expires
+                    log "session expires"
+                    response = "Session expires, please login again"
+                    res.writeHead(500, {"Content-type": "text/html"})
+                    res.end(response)
+                    # cleanup session
+                    cleanupSession(db, collection, token)
+                    return
+                else
+                    log "session not expires"
+                    uid = item.uid
+                    collection = db.collection(DATA_COLLECTION)
+                    id = uuid.v1()
+                    cmd = new Command()
+                    cmd.id =  id
+                    cmd.uid = uid
+                    cmd.date = date;
+                    cmd.data = 
+                            "command": command
+                            "desc" : ""
+                           
+                    collection.insert(cmd, (err, docs) ->
+                        throw err if err
+                        log "Just inserted, " + docs.length
+                        res.writeHead(200, {"Content-type": "text/html"});
+                        res.end()
+                    )
         )
 )
 
@@ -184,8 +196,7 @@ authenticate = (uid, password, res) ->
 registerToken = (db, uid, token) ->
     collection = db.collection(SESSION_COLLECTION)
     ses = new Session(token, uid)
-    log "Registering session" + ses.token
-
+    
     collection.insert(ses, (err, docs) ->
         throw err if err
     )
@@ -211,7 +222,6 @@ addAuthenticate = (uid, password) ->
 
 
 writeAsHtml = (doc) ->
-    log "Logging.."
     output = ""
     output += "<div class='commandContain'>"
     output += '<pre class="prettyprint">' + doc.data.command + "</pre>";
@@ -223,7 +233,6 @@ writeAsHtml = (doc) ->
 listCommands = (token, res) ->
     mongoClient.connect(mongoUri, (err, db) ->
         throw err if err
-        log "mongo connected"
         collection = db.collection(SESSION_COLLECTION)
         doc = collection.findOne({token: token}, (err, item) ->
             throw err if err
@@ -231,32 +240,75 @@ listCommands = (token, res) ->
                 # not found
                 log "token not found, means, hasn't login"
                 response = "Hasn't login yet"
-                res.writeHead(404, {"Content-type": "text/html"});
+                res.writeHead(403, {"Content-type": "text/html"});
                 res.end(response)
             else
-                # found session, continue
-                log "session found!"
-                collection = db.collection(DATA_COLLECTION)
-                docs = collection.find({uid: item.uid }, limit: 100)
-                response = ""
-                responseObjs = []
-                docs.each (err, doc) ->
-                    throw err if err
-                    if doc == null
-                        res.writeHead(200, {"Content-type": "text/html"});
-                        response = JSON.stringify responseObjs
-                        log response
-                        res.end(response);
-                        return;
-                    docObj =
-                        Cmd : doc.data.command
-                        Timestamp: doc.date
-                    responseObjs.push(docObj)
-
+                dateobj = new Date();
+                if item.expires < dateobj.getTime()
+                    # session expires
+                    log "session expires"
+                    response = "Session expires, please login again"
+                    res.writeHead(500, {"Content-type": "text/html"})
+                    res.end(response)
+                    cleanupSession(db, collection, token)
+                    return
+                else
+                    collection = db.collection(DATA_COLLECTION)
+                    docs = collection.find({uid: item.uid }, limit: 100)
+                    response = ""
+                    responseObjs = []
+                    docs.each (err, doc) ->
+                        throw err if err
+                        if doc == null
+                            res.writeHead(200, {"Content-type": "text/html"});
+                            response = JSON.stringify responseObjs
+                            log response
+                            res.end(response);
+                            return;
+                        docObj =
+                            Cmd : doc.data.command
+                            Timestamp: doc.date
+                        responseObjs.push(docObj)
+                    # end of if
             return
         )
         return
     )
+
+fetchCommandForNumber = (token, num, res) ->
+    mongoClient.connect(mongoUri, (err, db) ->
+        throw err if err
+        collection = db.collection(SESSION_COLLECTION)
+        doc = collection.findOne({token: token}, (err, item) ->
+            throw err if err
+            if item == null
+                #session not found
+                response = "Hasn't login yet"
+                res.writeHead(404, {"Content-type" : "text/html"})
+                res.end(response)
+            else
+                # session found, continue
+                    collection = db.collection(DATA_COLLECTION)
+                    docs = collection.find({uid: item.uid}, limit: 100)
+                    response = ""
+                    responseobjs = []
+                    docs.each(err, doc) ->
+                        throw err if err
+                        if doc == null
+                            res.writeHead(200, {"Content-type": "text/html"})
+                            response = JSON.stringify responseObjs
+                            res.end(response)
+                            return;
+        )
+    )
+
+cleanupSession = (db, collection, token) ->
+    collection.remove({token: token}, (err, item) ->
+        throw err if err
+        log item
+        db.close()
+    )
+        
 
                         
 server = http.createServer (req, res) ->
@@ -292,6 +344,12 @@ server = http.createServer (req, res) ->
         loginAs(user, password, res);
     else if basename.indexOf("search") == 0
         res.writeHead(200, {"Content-type": "plain/text"})
+    else if basename.indexOf("fetchCommandForNumber") == 0
+        query = url.parse(req.url).query
+        params = querystring.parse(query)
+        token = params.token
+        number = params.number
+        fetchCommandForNumber(token, number, res)
     else
         pathname = dirname + "/" + basename
         pathname = DOCROOT +  pathname;
