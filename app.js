@@ -163,17 +163,24 @@
           return collection.findOne({
             uid: uid
           }, function(err, item) {
+            var dateobj;
             if (err) {
               throw err;
             }
             if (item === null) {
               return authenticate(uid, password, res);
             } else {
-              response = item.token;
-              res.writeHead(409, {
-                "Content-type": "text/html"
-              });
-              return res.end(response);
+              dateobj = new Date();
+              if (item.expires < dateobj.getTime()) {
+                cleanupSession(db, collection, token);
+                return authenticate(uid, password, res);
+              } else {
+                response = item.token;
+                res.writeHead(409, {
+                  "Content-type": "text/html"
+                });
+                return res.end(response);
+              }
             }
           });
         }
@@ -332,7 +339,6 @@
           throw err;
         }
         if (item === null) {
-          log("token not found, means, hasn't login");
           response = "Hasn't login yet";
           res.writeHead(403, {
             "Content-type": "text/html"

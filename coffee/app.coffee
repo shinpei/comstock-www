@@ -118,10 +118,18 @@ loginAs = (user, password, res) ->
                         #Couldn't find user, proceed authenticate
                         authenticate(uid, password, res)
                     else
-                        #Already logged in, return "already loggedin"
-                        response = item.token
-                        res.writeHead(409, {"Content-type": "text/html"});
-                        res.end(response)
+                        #Already logged in, check if its expires or not
+                        dateobj = new Date()
+                        if item.expires < dateobj.getTime()
+                            # session expires, refresh
+                            cleanupSession(db, collection, token)
+                            # also, authenticate
+                            authenticate(uid, password, res)
+                        else
+                            # it doesn't expire, and session continues
+                            response = item.token
+                            res.writeHead(409, {"Content-type": "text/html"});
+                            res.end(response)
                 )
         ) # findOne done
     )
@@ -220,7 +228,6 @@ addAuthenticate = (uid, password) ->
     return
 
 
-
 writeAsHtml = (doc) ->
     output = ""
     output += "<div class='commandContain'>"
@@ -238,9 +245,9 @@ listCommands = (token, res) ->
             throw err if err
             if item == null
                 # session not found
-                log "token not found, means, hasn't login"
                 response = "Hasn't login yet"
                 res.writeHead(403, {"Content-type": "text/html"});
+
                 res.end(response)
             else
                 dateobj = new Date();
