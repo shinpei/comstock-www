@@ -12,6 +12,7 @@ mongoUri = process.env.MONGOHQ_URL || 'mongodb://localhost/comstock-www'
 mongoClient = mongo.MongoClient;
 
 DOCROOT = "documents"
+
 USER_COLLECTION = "user"
 AUTH_COLLECTION = "authinfo" # "auth" is reserve words for mongo client
 DATA_COLLECTION = "commands"
@@ -99,15 +100,13 @@ loginAs = (user, password, res) ->
         docs = collection.findOne({mail: user.mail}, (err, item) ->
             throw err if err
             log "Searching User"
-            log item
             if item == null
                 # user not found
-                response = makeHTMLResponse("Not Found")
+                response = "User Not Found"
                 res.writeHead(404, {"Content-type": "text/html"});
                 res.end(response)
             else
                 # found user
-                log item
                 log "User found, now authenticate"
                 uid = item.uid;
                 # check weather it's already logged in
@@ -163,11 +162,10 @@ loginOrRegister = (user, password, res) ->
                     )
                 )
             else
-                # found user
-                log item
-                log "User found, now authenticate"
-                uid = item.uid;
-                authenticate(uid, password, res)
+                log "User found, you cannot create duplicated user"
+                response = makeHTMLResponse("It's already registered email. Please try another one, or if you don't know about it, please let us know")
+                res.writeHead(401, {"Content-type": "text/html"})
+                res.end(response)
         ) # findOne done
     )
     return
@@ -358,12 +356,12 @@ server = http.createServer (req, res) ->
     else if basename.indexOf("loginAs") == 0
         user = new User(params.mail, "", "")
         loginAs(user, params.password, res);
-    else if basename.indexOf("search") == 0
-         res.writeHead(200, {"Content-type": "plain/text"})
     else if basename.indexOf("fetchCommandFromNumber") == 0
         number = parseInt params.number
         log "number=" + number
         fetchCommandFromNumber(params.authinfo, number, res)
+#    else if basename.indexOf("search") == 0
+
     else
         pathname = dirname + "/" + basename
         pathname = DOCROOT +  pathname;

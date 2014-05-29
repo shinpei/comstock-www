@@ -148,15 +148,13 @@
           throw err;
         }
         log("Searching User");
-        log(item);
         if (item === null) {
-          response = makeHTMLResponse("Not Found");
+          response = "User Not Found";
           res.writeHead(404, {
             "Content-type": "text/html"
           });
           return res.end(response);
         } else {
-          log(item);
           log("User found, now authenticate");
           uid = item.uid;
           collection = db.collection(SESSION_COLLECTION);
@@ -200,6 +198,7 @@
       return docs = collection.findOne({
         mail: user.mail
       }, function(err, item) {
+        var response;
         if (err) {
           throw err;
         }
@@ -230,10 +229,12 @@
             });
           });
         } else {
-          log(item);
-          log("User found, now authenticate");
-          uid = item.uid;
-          return authenticate(uid, password, res);
+          log("User found, you cannot create duplicated user");
+          response = makeHTMLResponse("Its registered email. Please try another one, or if you don't know about it, please let us know");
+          res.writeHead(401, {
+            "Content-type": "text/html"
+          });
+          return res.end(response);
         }
       });
     });
