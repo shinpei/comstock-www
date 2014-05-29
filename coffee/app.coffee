@@ -25,7 +25,7 @@ mineTypes =
     ".gif": "image/gif"
     ".ico" : "image/x-icon"
     ".jpg": "image/jpeg"
-    
+
 getHandler = (filepath, req, res) ->
     fs.exists(filepath, (exists) ->
         if exists
@@ -227,7 +227,6 @@ addAuthenticate = (uid, password) ->
     log "password insertion done"
     return
 
-
 writeAsHtml = (doc) ->
     output = ""
     output += "<div class='commandContain'>"
@@ -336,9 +335,11 @@ cleanupSession = (db, collection, token) ->
         throw err if err
         db.close()
     )
-        
 
-                        
+getParams = (req) ->
+    query = url.parse(req.url).query
+    return querystring.parse(query)
+    
 server = http.createServer (req, res) ->
     isIgnore = false;
     basename = path.basename(req.url) || 'index.html'
@@ -346,39 +347,23 @@ server = http.createServer (req, res) ->
     if dirname == "/"
         dirname = "" # reset it
     log basename 
+    params = getParams(req)
     if basename.indexOf("postCommand") == 0
-        query = url.parse(req.url).query
-        params = querystring.parse(query);
-        token = params.authinfo
-        postCommand(token, params.cmd, params.date, res);
+        postCommand(params.authinfo, params.cmd, params.date, res);
     else if basename.indexOf("list") == 0
-        query = url.parse(req.url).query
-        params = querystring.parse(query)
-        token = params.authinfo
-        listCommands(token, res)
+        listCommands(params.authinfo, res)
     else if basename.indexOf("loginOrRegister") == 0
-        query = url.parse(req.url).query
-        params = querystring.parse(query)
-        mail = params.mail
-        password = params.password
-        user = new User(mail, "", "")
-        loginOrRegister(user, password, res);
+        user = new User(params.mail, "", "")
+        loginOrRegister(user, params.password, res);
     else if basename.indexOf("loginAs") == 0
-        query = url.parse(req.url).query
-        params = querystring.parse(query)
-        mail = params.mail
-        password = params.password
-        user = new User(mail, "", "")
-        loginAs(user, password, res);
+        user = new User(params.mail, "", "")
+        loginAs(user, params.password, res);
     else if basename.indexOf("search") == 0
          res.writeHead(200, {"Content-type": "plain/text"})
     else if basename.indexOf("fetchCommandFromNumber") == 0
-        query = url.parse(req.url).query
-        params = querystring.parse(query)
-        token = params.authinfo
         number = parseInt params.number
         log "number=" + number
-        fetchCommandFromNumber(token, number, res)
+        fetchCommandFromNumber(params.authinfo, number, res)
     else
         pathname = dirname + "/" + basename
         pathname = DOCROOT +  pathname;
