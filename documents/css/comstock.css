@@ -20,3 +20,11 @@ body {
   padding: 72px 0 73px;
   text-align: center;
 }
+.head-menu {
+	text-align : right;
+	margin-right : 50px
+}
+
+.head-menu a {
+	margin-left: 10px;
+}
