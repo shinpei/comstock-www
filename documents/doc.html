@@ -29,9 +29,54 @@ because we are not good at mouse manipulating ("Damn, forget to copy the last ch
 or remembering which commands are in which. (Most cases, you don't remember the command and this make you more difficult to search it)
 
 I want a simple tool that can store your prefavor command with simple way, just type "command save".
-And this is why I started Comstock! Comstock provides you the simplest way to storing your commands avoiding annoying procedures.
+And this is why I started <code>comstock</code>! Comstock provides you the simplest way to storing your commands avoiding annoying procedures.
 </paragraph>
 <h4>Installation</h4>
+<paragraph>
+At this moment, Comstock requires <a href="http://www.golang.org">go</a> to run.
+After you install <code>go</code>, please run the command below.
+
+<pre class="prettyprint lang-sh">
+$ go get github.com/shinpei/comstock
+</pre>
+</paragraph>
+
+<h4>Getting started</h4>
+<paragraph>
+After you install <code>comstock</code>, creating account for the colud. Visit <a href="http://comstock.herokuapp.com">here</a>, you'll
+see the email and password registration. 
+<p>
+The very first step for using comstock is to login your account. Run the command below.
+<pre class="prettyprint">
+$ comstock login
+Your registered email address? : shinpei@githuxx.com
+And password? :
+Authentification success.
+</pre>
+If it was the very first time to run comstock command, it'll also create it's dedicated directory,
+which is <code> $HOME/.comstock</code>.
+<p>
+
+Now, run any command you want to store. For example, <code>ls</code>. 
+And then, hit <code> comstock save</code>. It'll store your command.
+<pre class="prettyprint lang-sh">
+$ ls
+$ comstock save 
+</pre>
+<p>
+You can refer your stored commands with <code>comstock list</code>. 
+<pre class="prettyprint">
+$ comstock list
+1: ls
+</pre>
+<p>
+You can fetch specific commands by running the command below.
+<pre class="prettyprint">
+$ comstock get 1 
+ls
+</pre>
+</paragraph>
+<h4></h4>
 
 </div>
 
