@@ -121,7 +121,7 @@ loginAs = (user, password, res) ->
                         dateobj = new Date()
                         if item.expires < dateobj.getTime()
                             # session expires, refresh
-                            cleanupSession(db, collection, token)
+                            cleanupSession(db, collection, item.token)
                             # also, authenticate
                             authenticate(uid, password, res)
                         else

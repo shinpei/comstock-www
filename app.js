@@ -170,7 +170,7 @@
             } else {
               dateobj = new Date();
               if (item.expires < dateobj.getTime()) {
-                cleanupSession(db, collection, token);
+                cleanupSession(db, collection, item.token);
                 return authenticate(uid, password, res);
               } else {
                 response = item.token;
