@@ -230,7 +230,7 @@
           });
         } else {
           log("User found, you cannot create duplicated user");
-          response = makeHTMLResponse("Its registered email. Please try another one, or if you don't know about it, please let us know");
+          response = makeHTMLResponse("It's already registered email. Please try another one, or if you don't know about it, please let us know");
           res.writeHead(401, {
             "Content-type": "text/html"
           });
@@ -500,10 +500,6 @@
     } else if (basename.indexOf("loginAs") === 0) {
       user = new User(params.mail, "", "");
       return loginAs(user, params.password, res);
-    } else if (basename.indexOf("search") === 0) {
-      return res.writeHead(200, {
-        "Content-type": "plain/text"
-      });
     } else if (basename.indexOf("fetchCommandFromNumber") === 0) {
       number = parseInt(params.number);
       log("number=" + number);
