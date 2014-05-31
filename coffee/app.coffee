@@ -346,6 +346,7 @@ server = http.createServer (req, res) ->
         dirname = "" # reset it
     log basename 
     params = getParams(req)
+    engine = new Engine()
     if basename.indexOf("postCommand") == 0
         postCommand(params.authinfo, params.cmd, params.date, res);
     else if basename.indexOf("list") == 0
@@ -360,6 +361,9 @@ server = http.createServer (req, res) ->
         number = parseInt params.number
         log "number=" + number
         fetchCommandFromNumber(params.authinfo, number, res)
+    else if basename.indexOf("deleteUser") == 0
+        user = new User(params.mail, "", "")
+        engine.deleteUser(user,res);
 #    else if basename.indexOf("search") == 0
 
     else
@@ -373,3 +377,4 @@ port = process.env.PORT || 5000;
 server.listen(port, ->
     log "http server listening on port " + server.address().port;
 )
+
