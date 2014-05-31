@@ -104,7 +104,7 @@
             cmd = new Command();
             cmd.id = id;
             cmd.uid = uid;
-            cmd.date = dateobj.getTime();
+            cmd.date = parseString(dateobj.getTime());
             cmd.data = {
               "command": command,
               "desc": ""
