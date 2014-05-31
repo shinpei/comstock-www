@@ -1,4 +1,5 @@
 class Command
+    "id": ""
     "uid": ""
     "date": ""
     "data":

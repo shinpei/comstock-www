@@ -582,6 +582,8 @@
   Command = (function() {
     function Command() {}
 
+    Command.prototype["id"] = "";
+
     Command.prototype["uid"] = "";
 
     Command.prototype["date"] = "";
