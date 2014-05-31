@@ -41,7 +41,7 @@ getHandler = (filepath, req, res) ->
             );
     )
 
-postCommand = (token, command, date, res) ->
+postCommand = (token, command, res) ->
     mongoClient.connect(mongoUri, (err, db) ->
         throw err if err
         collection = db.collection(SESSION_COLLECTION)
@@ -72,7 +72,7 @@ postCommand = (token, command, date, res) ->
                     cmd = new Command()
                     cmd.id =  id
                     cmd.uid = uid
-                    cmd.date = date;
+                    cmd.date = dateobj.getTime()
                     cmd.data = 
                             "command": command
                             "desc" : ""
@@ -320,7 +320,7 @@ server = http.createServer (req, res) ->
     params = getParams(req)
     engine = new Engine()
     if basename.indexOf("postCommand") == 0
-        postCommand(params.authinfo, params.cmd, params.date, res);
+        postCommand(params.authinfo, params.cmd, res);
     else if basename.indexOf("list") == 0
         listCommands(params.authinfo, res)
     else if basename.indexOf("loginOrRegister") == 0

@@ -64,7 +64,7 @@
     });
   };
 
-  postCommand = function(token, command, date, res) {
+  postCommand = function(token, command, res) {
     return mongoClient.connect(mongoUri, function(err, db) {
       var collection, doc;
       if (err) {
@@ -104,7 +104,7 @@
             cmd = new Command();
             cmd.id = id;
             cmd.uid = uid;
-            cmd.date = date;
+            cmd.date = dateobj.getTime();
             cmd.data = {
               "command": command,
               "desc": ""
@@ -447,7 +447,7 @@
     params = getParams(req);
     engine = new Engine();
     if (basename.indexOf("postCommand") === 0) {
-      return postCommand(params.authinfo, params.cmd, params.date, res);
+      return postCommand(params.authinfo, params.cmd, res);
     } else if (basename.indexOf("list") === 0) {
       return listCommands(params.authinfo, res);
     } else if (basename.indexOf("loginOrRegister") === 0) {
