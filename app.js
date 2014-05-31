@@ -74,7 +74,7 @@
       return doc = collection.findOne({
         token: token
       }, function(err, item) {
-        var cmd, dateobj, id, response, uid;
+        var cmd, dateobj, response, uid;
         if (err) {
           throw err;
         }
@@ -100,11 +100,9 @@
             log("session not expires");
             uid = item.uid;
             collection = db.collection(DATA_COLLECTION);
-            id = uuid.v1();
             cmd = new Command();
-            cmd.id = id;
             cmd.uid = uid;
-            cmd.date = parseString(dateobj.getTime());
+            cmd.date = "" + dateobj.getTime();
             cmd.data = {
               "command": command,
               "desc": ""
@@ -581,8 +579,6 @@
 
   Command = (function() {
     function Command() {}
-
-    Command.prototype["id"] = "";
 
     Command.prototype["uid"] = "";
 

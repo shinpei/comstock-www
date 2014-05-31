@@ -68,11 +68,9 @@ postCommand = (token, command, res) ->
                     log "session not expires"
                     uid = item.uid
                     collection = db.collection(DATA_COLLECTION)
-                    id = uuid.v1()
                     cmd = new Command()
-                    cmd.id =  id
                     cmd.uid = uid
-                    cmd.date = parseString dateobj.getTime()
+                    cmd.date = ""+ dateobj.getTime()
                     cmd.data = 
                             "command": command
                             "desc" : ""
