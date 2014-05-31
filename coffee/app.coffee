@@ -53,6 +53,7 @@ postCommand = (token, command, date, res) ->
                 response = "Hasn't login yet"
                 res.writeHead(404, {"Content-type": "text/html"})
                 res.end(response)
+                db.close()
             else
                 dateobj = new Date();
                 if item.expires < dateobj.getTime()
@@ -63,7 +64,6 @@ postCommand = (token, command, date, res) ->
                     res.end(response)
                     # cleanup session
                     cleanupSession(db, collection, token)
-                    return
                 else
                     log "session not expires"
                     uid = item.uid
@@ -82,6 +82,7 @@ postCommand = (token, command, date, res) ->
                         log "Just inserted, " + docs.length
                         res.writeHead(200, {"Content-type": "text/html"});
                         res.end()
+                        db.close()
                     )
         )
 )
@@ -105,6 +106,7 @@ loginAs = (user, password, res) ->
                 response = "User Not Found"
                 res.writeHead(404, {"Content-type": "text/html"});
                 res.end(response)
+                db.close()
             else
                 # found user
                 log "User found, now authenticate"
@@ -129,46 +131,12 @@ loginAs = (user, password, res) ->
                             response = item.token
                             res.writeHead(409, {"Content-type": "text/html"});
                             res.end(response)
+                            db.close()
                 )
         ) # findOne done
     )
     return
 
-loginOrRegister = (user, password, res) ->
-    mongoClient.connect(mongoUri, (err, db) ->
-        throw err if err
-        collection = db.collection(USER_COLLECTION)
-        createdNewUser = false
-        uid = 0;
-        docs = collection.findOne({mail: user.mail}, (err, item) ->
-            throw err if err
-            log "User finding?"
-            log item
-            if item == null
-                # cannot find user. register it
-                collection.find().count((err, count) ->
-                    throw err if err
-                    date = new Date();
-                    user.uid = count + 1
-                    user.created = date.getTime()
-                    user.lastLogin = date.getTime();
-                    collection.insert(user, (err, docs) ->
-                        throw err if err
-                        log "uid is " + user.uid
-                        addAuthenticate(user.uid, password)
-                        response = makeHTMLResponse("User added, thank you for registering", 200)
-                        res.writeHead(200, {"Content-type": "text/html"});
-                        res.end(response)
-                    )
-                )
-            else
-                log "User found, you cannot create duplicated user"
-                response = makeHTMLResponse("It's already registered email. Please try another one, or if you don't know about it, please let us know")
-                res.writeHead(401, {"Content-type": "text/html"})
-                res.end(response)
-        ) # findOne done
-    )
-    return
 
 authenticate = (uid, password, res) ->
     log "Authentication process got uid="+ uid
@@ -185,16 +153,19 @@ authenticate = (uid, password, res) ->
                     res.writeHead(200,{"Content-type": "text/html"});
                     res.end(response)
                     log "authenticate success!"
+                    db.close()
                 else
                     response = makeHTMLResponse("Login Denied")
                     res.writeHead(403 ,{"Content-type": "text/html"});
                     res.end(response)
                     log "authentication denied for wrong password"
+                    db.close()
             else
                 response = makeHTMLResponse("Not found")
                 res.writeHead(404 ,{"Content-type": "text/html"});
                 res.end(response)
                 log "Authentication defnied because user uid not found"
+                db.close()
         )
     )
 
@@ -244,8 +215,8 @@ listCommands = (token, res) ->
                 # session not found
                 response = "Hasn't login yet"
                 res.writeHead(403, {"Content-type": "text/html"});
-
                 res.end(response)
+                db.close()
             else
                 dateobj = new Date();
                 if item.expires < dateobj.getTime()
@@ -268,6 +239,7 @@ listCommands = (token, res) ->
                             response = JSON.stringify responseObjs
                             log response
                             res.end(response);
+                            db.close()
                             return;
                         docObj =
                             Cmd : doc.data.command
@@ -353,7 +325,7 @@ server = http.createServer (req, res) ->
         listCommands(params.authinfo, res)
     else if basename.indexOf("loginOrRegister") == 0
         user = new User(params.mail, "", "")
-        loginOrRegister(user, params.password, res);
+        engine.registerUser(user, params.password, res);
     else if basename.indexOf("loginAs") == 0
         user = new User(params.mail, "", "")
         loginAs(user, params.password, res);
@@ -361,9 +333,9 @@ server = http.createServer (req, res) ->
         number = parseInt params.number
         log "number=" + number
         fetchCommandFromNumber(params.authinfo, number, res)
-    else if basename.indexOf("deleteUser") == 0
-        user = new User(params.mail, "", "")
-        engine.deleteUser(user,res);
+#    else if basename.indexOf("deleteUser") == 0
+#        user = new User(params.mail, "", "")
+#        engine.deleteUser(user,res);
 #    else if basename.indexOf("search") == 0
 
     else
