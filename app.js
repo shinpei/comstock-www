@@ -147,7 +147,6 @@
         if (err) {
           throw err;
         }
-        log("Searching User");
         if (item === null) {
           response = "User Not Found";
           res.writeHead(404, {
@@ -156,7 +155,6 @@
           res.end(response);
           return db.close();
         } else {
-          log("User found, now authenticate");
           uid = item.uid;
           collection = db.collection(SESSION_COLLECTION);
           return collection.findOne({

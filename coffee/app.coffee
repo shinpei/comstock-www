@@ -98,7 +98,6 @@ loginAs = (user, password, res) ->
         uid = 0;
         docs = collection.findOne({mail: user.mail}, (err, item) ->
             throw err if err
-            log "Searching User"
             if item == null
                 # user not found
                 response = "User Not Found"
@@ -106,8 +105,7 @@ loginAs = (user, password, res) ->
                 res.end(response)
                 db.close()
             else
-                # found user
-                log "User found, now authenticate"
+                # user found
                 uid = item.uid;
                 # check weather it's already logged in
                 collection = db.collection(SESSION_COLLECTION)

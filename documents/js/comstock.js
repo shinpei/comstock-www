@@ -1,40 +1,13 @@
-(function(d){
-		var js, id = 'facebook-jssdk', ref = d.getElementsByTagName('script')[0];
-		if (d.getElementById(id)) {return;}
-		js = d.createElement('script'); js.id = id; js.async = true;
-		js.src = "//connect.facebook.net/en_US/all.js";
-		ref.parentNode.insertBefore(js, ref);
-	}(document));
-
-function login() {
-    FB.login(function(response) {
-        if (response.authResponse) {
-            // connected
-        } else {
-            // cancelled
-        }
-    });
+function MyController($scope, $http) {
+    $scope.myData = {};
+    $scope.myData.doClick = function(item, event) {
+        var responsePromise = $http.get("/doc.html");
+        responsePromise.success(function(data, status, headers, config) {
+			console.log(data.title)
+            $scope.myData.fromServer = data.title;
+        });
+        responsePromise.error(function(data, status, headers, config) {
+			console.log(data)
+        });
+    }
 }
-
-window.fbAsyncInit = function() {
-	FB.init({
-		appId      : '463757170423444', // AppID
-		channelUrl : '//http://comstock.herokuapp.com/channel.html', 
-		status     : true, // check login status
-		cookie     : true, // enable cookies to allow the server to access the session
-		xfbml      : true  // parse XFBML
-	});
-};
-
-// main
-/*
-var socket = io.connect('http://localhost');
-  socket.on('news', function (data) {
-    console.log(data);
-    socket.emit('my other event', { my: 'data' });
-  });
- $("footer").click(function() {
-	 socket.emit('fetchCommands');
- });
-
-*/

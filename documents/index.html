@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html lang="jp">
+<html lang="jp" ng-app>
 <head>
 <meta charset="utf-8">
 <title>Comstock</title>
@@ -7,8 +7,11 @@
 <link href="css/comstock.css" rel="stylesheet">
 <link href="css/flat-ui.css" rel="stylesheet">
 <link href="css/animate.css" rel="stylesheet">
+<script src="js/angular.min.js"></script>
+<script src="js/comstock.js"></script>
 
-<body>
+</head>
+<body np-app="myapp">
 <div class="head-menu">
 <a href="index.html"><small>Main</small></a>
 <a href="doc.html"><small>Document</small></a>
@@ -23,11 +26,13 @@
 </div>
 <div class="wow fadeInLeft" style="padding-top:50
 px">
-<form id="loginform" action="loginOrRegister" method="GET">
-<input type="text" name="mail" value placeholder="Email/username" class="form-control"></input>
-<input type="text" name="password" value placeholder="password" class="form-control"></input>
+<form id="loginform" action="loginOrRegister" method="GET" name="userInfo">
+<input type="input" ng-model="mail" ng-pattern="/^.+@.+/" name="mail" value placeholder="Email" class="form-control"></input>
+<input type="password" ng-model="password" name="password" value placeholder="Password" class="form-control"></input>
+<small class="error" style="color:#E74C3C" ng-show="userInfo.mail.$error.pattern">NG</small>
+<small class="valid" style="color:#1ABC9C" ng-show="userInfo.mail.$valid">OK</small>
 <p>
-<p><a class="btn btn-primary" onclick="$('#loginform').submit()">register</a>
+<p><input type="submit" class="btn btn-primary" value="register"></input>
 </form>
 </div>
 </div>
@@ -37,6 +42,11 @@ px">
 <h4>Install</h4>
 <pre class="prettyprint lang-sh">
 $ go get github.com/shinpei/comstock
+</pre>
+Or, from homebrew (Mac only)
+<pre class="prettyprint lang-sh">
+$ brew tap shinpei/comstock
+$ brew install comstock
 </pre>
 </div>
 
@@ -75,11 +85,10 @@ $ comstock run 1
 </pre>
 </div>
 
-    <footer>
-		<p> Do you have any feedback? please contact me via <a href="http://www.twitter.com/shinpeinkt">@shinpeinkt</a>, or <a href="http://www.github.com/shinpei">github/shinpei</a>
-		</p>
-    </footer>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+<footer>
+  <p> Do you have any feedback? please contact me via <a href="http://www.twitter.com/shinpeinkt">@shinpeinkt</a>, or <a href="http://www.github.com/shinpei">github/shinpei</a>
+  </p>
+</footer>
 <script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js?skin=desert"></script>
 <script src="js/wow.min.js"></script>
 <script>
