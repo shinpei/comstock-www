@@ -28,9 +28,10 @@
 px">
 <form id="loginform" action="loginOrRegister" method="GET" name="userInfo">
 <input type="input" ng-model="mail" ng-pattern="/^.+@.+/" name="mail" value placeholder="Email" class="form-control"></input>
-<input type="password" ng-model="password" name="password" value placeholder="Password" class="form-control"></input>
-<small class="error" style="color:#E74C3C" ng-show="userInfo.mail.$error.pattern">NG</small>
-<small class="valid" style="color:#1ABC9C" ng-show="userInfo.mail.$valid">OK</small>
+<input type="password" ng-model="password" ng-maxlength="64" name="password" value placeholder="Password" class="form-control"></input>
+<small class="error" style="color:#E74C3C" ng-show="userInfo.mail.$error.pattern || userInfo.password.$error.maxlength">NG</small>
+<small class="valid" style="color:#1ABC9C" ng-show="userInfo.mail.$valid && !userInfo.password.$error.maxlength">OK</small>
+<small class="error" style="color:#E74C3C" ng-show="userInfo.password.$error.maxlength">(Max 64 char)</small>
 <p>
 <p><input type="submit" class="btn btn-primary" value="register"></input>
 </form>
