@@ -174,24 +174,6 @@ registerToken = (db, uid, token) ->
         throw err if err
     )
 
-
-addAuthenticate = (uid, password) ->
-    # add user-password to the db
-    mongoClient.connect(mongoUri, (err, db) ->
-        throw err if err
-        collection = db.collection(AUTH_COLLECTION)
-        oneData =
-            "uid": uid
-            "date": ""
-            "password":password
-
-        collection.insert(oneData, (err, docs) ->
-            throw err if err
-        )
-    )
-    log "password insertion done"
-    return
-
 writeAsHtml = (doc) ->
     output = ""
     output += "<div class='commandContain'>"

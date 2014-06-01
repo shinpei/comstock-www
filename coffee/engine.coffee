@@ -20,12 +20,18 @@ class Engine
                         user.lastLogin = date.getTime();
                         collection.insert(user, (err, docs) ->
                             throw err if err
-                            log "uid is " + user.uid
-                            addAuthenticate(user.uid, password)
-                            response = makeHTMLResponse("User added, thank you for registering", 200)
-                            res.writeHead(200, {"Content-type": "text/html"});
-                            res.end(response)
-                            db.close()
+                            collection = db.collection(AUTH_COLLECTION)
+                            oneData =
+                                "uid": user.uid
+                                "date": ""
+                                "password":password
+                             collection.insert(oneData, (err, docs) ->
+                                throw err if err
+                                response = makeHTMLResponse("User added, thank you for registering", 200)
+                                res.writeHead(200, {"Content-type": "text/html"});
+                                res.end(response)
+                                db.close()
+                            )
                         )
                     )
                 else
@@ -37,6 +43,7 @@ class Engine
             ) # findOne done
         )
 
+    addAuthenticate : (db, res, uid, password) ->
                 
     deleteUser: (user, res) ->
         mongoClient.connect(mongoUri, (err, db) ->
