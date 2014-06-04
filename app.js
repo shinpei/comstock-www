@@ -425,7 +425,7 @@
       return postCommand(params.authinfo, params.cmd, res);
     } else if (basename.indexOf("list") === 0) {
       return listCommands(params.authinfo, res);
-    } else if (basename.indexOf("loginOrRegister") === 0) {
+    } else if (basename.indexOf("registerUser") === 0) {
       user = new User(params.mail, "", "");
       return engine.registerUser(user, params.password, res);
     } else if (basename.indexOf("loginAs") === 0) {
