@@ -6,7 +6,7 @@ function MyController($scope, $http) {
 		var password = user.password
 		$http ({
 			method:"GET",
-			url: "/loginOrRegister",
+			url: "/registerUser",
 			params: {
 				mail: mail,
 				password: password

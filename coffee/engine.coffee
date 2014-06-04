@@ -26,26 +26,24 @@ class Engine
                                 "date": ""
                                 "password":password
                              collection.insert(oneData, (err, docs) ->
-                                throw err if err
-                                response = makeHTMLResponse("User added, thank you for registering", 200)
-                                res.writeHead(200, {"Content-type": "text/html"});
-                                res.end(JSON.stringify(response))
-                                db.close()
+                                 throw err if err
+                                 db.close()
+                                 response = makeHTMLResponse("User added, thank you for registering", 200)
+                                 res.writeHead(200, {"Content-type": "text/html"});
+                                 res.end(JSON.stringify(response))
                             )
                         )
                     )
                 else
                     log "User found, you cannot create duplicated user"
+                    db.close()
                     response =
                         message: "It's already registered email. Please try another one, or if you don't know about it, please let us know"
                     res.writeHead(401, {"Content-type": "text/html"})
                     res.end(JSON.stringify(response))
-                    db.close()
             ) # findOne done
         )
 
-    addAuthenticate : (db, res, uid, password) ->
-                
     deleteUser: (user, res) ->
         mongoClient.connect(mongoUri, (err, db) ->
             throw err if err
@@ -53,10 +51,10 @@ class Engine
             doc = collection.findOne({mail:user.mail}, (err, item) ->
                 throw err if err
                 if item == null
+                    db.close()
                     response = "User not found"
                     res.writeHead(404, {"Content-type": "text/html"});
                     res.end(response)
-                    db.close()
                 else
                     uid = parseInt item.uid;
                     collection = db.collection(DATA_COLLECTION)

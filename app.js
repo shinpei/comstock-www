@@ -496,31 +496,29 @@
                   if (err) {
                     throw err;
                   }
+                  db.close();
                   response = makeHTMLResponse("User added, thank you for registering", 200);
                   res.writeHead(200, {
                     "Content-type": "text/html"
                   });
-                  res.end(JSON.stringify(response));
-                  return db.close();
+                  return res.end(JSON.stringify(response));
                 });
               });
             });
           } else {
             log("User found, you cannot create duplicated user");
+            db.close();
             response = {
               message: "It's already registered email. Please try another one, or if you don't know about it, please let us know"
             };
             res.writeHead(401, {
               "Content-type": "text/html"
             });
-            res.end(JSON.stringify(response));
-            return db.close();
+            return res.end(JSON.stringify(response));
           }
         });
       });
     };
-
-    Engine.prototype.addAuthenticate = function(db, res, uid, password) {};
 
     Engine.prototype.deleteUser = function(user, res) {
       return mongoClient.connect(mongoUri, function(err, db) {
@@ -537,12 +535,12 @@
             throw err;
           }
           if (item === null) {
+            db.close();
             response = "User not found";
             res.writeHead(404, {
               "Content-type": "text/html"
             });
-            res.end(response);
-            return db.close();
+            return res.end(response);
           } else {
             uid = parseInt(item.uid);
             collection = db.collection(DATA_COLLECTION);
