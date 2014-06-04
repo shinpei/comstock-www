@@ -11,7 +11,7 @@
 <script src="js/comstock.js"></script>
 
 </head>
-<body np-app="myapp">
+<body np-app="myApp">
 <div class="head-menu">
 <a href="index.html"><small>Main</small></a>
 <a href="doc.html"><small>Document</small></a>
@@ -25,18 +25,20 @@
 <small>Stock your command to the cloud</small>
 </div>
 <div class="wow fadeInLeft" style="padding-top:50
-px">
-<form id="loginform" action="loginOrRegister" method="GET" name="userInfo">
-<input type="input" ng-model="mail" ng-pattern="/^.+@.+/" name="mail" value placeholder="Email" class="form-control"></input>
-<input type="password" ng-model="password" ng-maxlength="64" name="password" value placeholder="Password" class="form-control"></input>
-<small class="error" style="color:#E74C3C" ng-show="userInfo.mail.$error.pattern || userInfo.password.$error.maxlength">NG</small>
-<small class="valid" style="color:#1ABC9C" ng-show="userInfo.mail.$valid && !userInfo.password.$error.maxlength">OK</small>
-<small class="error" style="color:#E74C3C" ng-show="userInfo.password.$error.maxlength">(Max 64 char)</small>
+px" ng-controller="MyController">
+<form id="loginform" name="loginForm">
+<small class="valid" style="color:#1ABC9C" ng-model="responseSuccess" ng-show="isFormSend">{{response}}</small>
+<small class="error" style="color:#E74C3C" ng-show="isFormSend">{{response}}</small><p>
+<input type="input" ng-model="user.mail" ng-pattern="/^.+@.+/" name="mail" value placeholder="Email" class="form-control" required></input>
+<input type="password" ng-model="user.password" ng-maxlength="64" name="password" value placeholder="Password" class="form-control" required></input>
+<small class="error" style="color:#E74C3C" ng-show="loginForm.mail.$error.pattern || loginForm.password.$error.maxlength">NG</small>
+<small class="valid" style="color:#1ABC9C" ng-show="loginForm.mail.$valid && !loginForm.password.$error.maxlength">OK</small>
+<small class="error" style="color:#E74C3C" ng-show="loginForm.password.$error.maxlength">(Max 64 char)</small>
 <p>
-<p><input type="submit" class="btn btn-primary" value="register"></input>
+<p><button type="submit" ng-disabled="loginForm.$invalid" ng-click="submitData(user)" class="btn btn-primary" >register</button>
 </form>
-</div>
-</div>
+</div> <!-- ngcontroller -->
+</div> <!-- demo headline -->
 
 
 <div class="container wow fadeIn">

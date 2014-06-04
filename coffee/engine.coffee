@@ -29,16 +29,17 @@ class Engine
                                 throw err if err
                                 response = makeHTMLResponse("User added, thank you for registering", 200)
                                 res.writeHead(200, {"Content-type": "text/html"});
-                                res.end(response)
+                                res.end(JSON.stringify(response))
                                 db.close()
                             )
                         )
                     )
                 else
                     log "User found, you cannot create duplicated user"
-                    response = makeHTMLResponse("It's already registered email. Please try another one, or if you don't know about it, please let us know")
+                    response =
+                        message: "It's already registered email. Please try another one, or if you don't know about it, please let us know"
                     res.writeHead(401, {"Content-type": "text/html"})
-                    res.end(response)
+                    res.end(JSON.stringify(response))
                     db.close()
             ) # findOne done
         )

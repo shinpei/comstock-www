@@ -108,6 +108,7 @@ loginAs = (user, password, res) ->
                 # user found
                 uid = item.uid;
                 # check weather it's already logged in
+#                collection.close()
                 collection = db.collection(SESSION_COLLECTION)
                 collection.findOne({uid: uid}, (err, item) ->
                     throw err if err
@@ -289,8 +290,8 @@ getParams = (req) ->
     return querystring.parse(query)
     
 server = http.createServer (req, res) ->
-    isIgnore = false;
     basename = path.basename(req.url) || 'index.html'
+    log req.url
     dirname = path.dirname(req.url)
     if dirname == "/"
         dirname = "" # reset it

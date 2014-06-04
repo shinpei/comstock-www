@@ -411,9 +411,9 @@
   };
 
   server = http.createServer(function(req, res) {
-    var basename, dirname, engine, isIgnore, number, params, pathname, user;
-    isIgnore = false;
+    var basename, dirname, engine, number, params, pathname, user;
     basename = path.basename(req.url) || 'index.html';
+    log(req.url);
     dirname = path.dirname(req.url);
     if (dirname === "/") {
       dirname = "";
@@ -500,18 +500,20 @@
                   res.writeHead(200, {
                     "Content-type": "text/html"
                   });
-                  res.end(response);
+                  res.end(JSON.stringify(response));
                   return db.close();
                 });
               });
             });
           } else {
             log("User found, you cannot create duplicated user");
-            response = makeHTMLResponse("It's already registered email. Please try another one, or if you don't know about it, please let us know");
+            response = {
+              message: "It's already registered email. Please try another one, or if you don't know about it, please let us know"
+            };
             res.writeHead(401, {
               "Content-type": "text/html"
             });
-            res.end(response);
+            res.end(JSON.stringify(response));
             return db.close();
           }
         });
