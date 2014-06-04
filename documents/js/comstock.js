@@ -1,6 +1,6 @@
 
 function MyController($scope, $http) {
-	$scope.response = "HIHI"
+	$scope.response = ""
     $scope.submitData = function (user, resultVarName) {
 		var mail = user.mail
 		var password = user.password
@@ -13,17 +13,17 @@ function MyController($scope, $http) {
 			}
 		})
 			.success (function (data, status, headers, config) {
-				console.log("success")
-				console.log($scope)
-				$scope["response"]  = data.msg
-				$scope["isSuccess"] = true
+				$scope.response  = data.message
+				$scope.isSucc = true
 			})
 			.error ( function (data, status, headers, config) {
-				console.log("error")
-				console.log($scope)
-				$scope["response"] = data.msg
-				$scope["isSuccess"] = false
+				$scope.response = data.message
+				$scope.isSucc = false
 			});
 	}
+	$scope.getIsSuccess = function() {
+		return $scope.isSucc;
+	}
+
 }
 

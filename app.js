@@ -497,9 +497,11 @@
                     throw err;
                   }
                   db.close();
-                  response = makeHTMLResponse("User added, thank you for registering", 200);
+                  response = {
+                    message: "User added, thank you for registering"
+                  };
                   res.writeHead(200, {
-                    "Content-type": "text/html"
+                    "Content-type": "application/json"
                   });
                   return res.end(JSON.stringify(response));
                 });
@@ -512,7 +514,7 @@
               message: "It's already registered email. Please try another one, or if you don't know about it, please let us know"
             };
             res.writeHead(401, {
-              "Content-type": "text/html"
+              "Content-type": "application/json"
             });
             return res.end(JSON.stringify(response));
           }

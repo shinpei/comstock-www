@@ -26,9 +26,11 @@
 </div>
 <div class="wow fadeInLeft" style="padding-top:50
 px" ng-controller="MyController">
+
 <form id="loginform" name="loginForm">
-<small class="valid" style="color:#1ABC9C" ng-model="responseSuccess" ng-show="isFormSend">{{response}}</small>
-<small class="error" style="color:#E74C3C" ng-show="isFormSend">{{response}}</small><p>
+<small class="valid wow" style="color:#1ABC9C" ng-show="getIsSuccess()">{{response}}</small>
+<small class="error wow" style="color:#E74C3C" ng-hide="getIsSuccess()">{{response}}</small>
+<p>
 <input type="input" ng-model="user.mail" ng-pattern="/^.+@.+/" name="mail" value placeholder="Email" class="form-control" required></input>
 <input type="password" ng-model="user.password" ng-maxlength="64" name="password" value placeholder="Password" class="form-control" required></input>
 <small class="error" style="color:#E74C3C" ng-show="loginForm.mail.$error.pattern || loginForm.password.$error.maxlength">NG</small>

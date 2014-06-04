@@ -28,8 +28,9 @@ class Engine
                              collection.insert(oneData, (err, docs) ->
                                  throw err if err
                                  db.close()
-                                 response = makeHTMLResponse("User added, thank you for registering", 200)
-                                 res.writeHead(200, {"Content-type": "text/html"});
+                                 response =
+                                     message: "User added, thank you for registering"
+                                 res.writeHead(200, {"Content-type": "application/json"});
                                  res.end(JSON.stringify(response))
                             )
                         )
@@ -39,7 +40,7 @@ class Engine
                     db.close()
                     response =
                         message: "It's already registered email. Please try another one, or if you don't know about it, please let us know"
-                    res.writeHead(401, {"Content-type": "text/html"})
+                    res.writeHead(401, {"Content-type": "application/json"})
                     res.end(JSON.stringify(response))
             ) # findOne done
         )
