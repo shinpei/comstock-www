@@ -45,7 +45,7 @@ class Engine
             ) # findOne done
         )
     checkSession: (token, res) ->
-        mongoclient.connect(mongoUri, (err, db) ->
+        mongoClient.connect(mongoUri, (err, db) ->
             throw err if err
             collection = db.collection(SESSION_COLLECTION)
             doc = collection.findOne({token: token}, (err, item) ->

@@ -525,7 +525,7 @@
     };
 
     Engine.prototype.checkSession = function(token, res) {
-      return mongoclient.connect(mongoUri, function(err, db) {
+      return mongoClient.connect(mongoUri, function(err, db) {
         var collection, doc;
         if (err) {
           throw err;
