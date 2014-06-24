@@ -312,6 +312,10 @@ server = http.createServer (req, res) ->
         number = parseInt params.number
         log "number=" + number
         fetchCommandFromNumber(params.authinfo, number, res)
+    else if basename.indexOf("checkSession") == 0
+        engine.checkSession(params.authinfo, res);
+        
+
 #    else if basename.indexOf("deleteUser") == 0
 #        user = new User(params.mail, "", "")
 #        engine.deleteUser(user,res);

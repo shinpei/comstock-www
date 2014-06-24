@@ -44,7 +44,45 @@ class Engine
                     res.end(JSON.stringify(response))
             ) # findOne done
         )
+    checkSession: (token, res) ->
+        mongoclient.connect(mongoUri, (err, db) ->
+            throw err if err
+            collection = db.collection(SESSION_COLLECTION)
+            doc = collection.findOne({token: token}, (err, item) ->
+                throw err if err
+                if item == null
+                    # not found
+                    log "token not found, means, hasn't login"
+                    db.close()
+                    response =
+                        message: "Hasn't login yet"
+                    res.writeHead(404, {"Content-type": "application/json"})
+                    res.end(JSON.stringify(response))
+                else
+                    dateobj = new Date();
+                    if item.expires < dateobj.getTime()
+                        # session expires
+                        response =
+                            message: "Session expires, please login again"
+                        res.writeHead(500, {"Content-type": "application/json"})
+                        res.end(response)
+                        this.cleanupSession(db, collection, token);
+                    else
+                        response =
+                            message:"Session is alive"
+                        res.writeHead(200, {"Content-type": "application/json"})
+                        res.end()
+                        db.close()
+            )
+        )
+                            
+    cleanupSession: (db, collection, token) ->
+        collection.remove({token: token}, (err, item) ->
+            throw err if err
+            db.close()
+        )
 
+            
     deleteUser: (user, res) ->
         mongoClient.connect(mongoUri, (err, db) ->
             throw err if err

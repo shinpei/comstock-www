@@ -435,6 +435,8 @@
       number = parseInt(params.number);
       log("number=" + number);
       return fetchCommandFromNumber(params.authinfo, number, res);
+    } else if (basename.indexOf("checkSession") === 0) {
+      return engine.checkSession(params.authinfo, res);
     } else {
       pathname = dirname + "/" + basename;
       pathname = DOCROOT + pathname;
@@ -519,6 +521,67 @@
             return res.end(JSON.stringify(response));
           }
         });
+      });
+    };
+
+    Engine.prototype.checkSession = function(token, res) {
+      return mongoclient.connect(mongoUri, function(err, db) {
+        var collection, doc;
+        if (err) {
+          throw err;
+        }
+        collection = db.collection(SESSION_COLLECTION);
+        return doc = collection.findOne({
+          token: token
+        }, function(err, item) {
+          var dateobj, response;
+          if (err) {
+            throw err;
+          }
+          if (item === null) {
+            log("token not found, means, hasn't login");
+            db.close();
+            response = {
+              message: "Hasn't login yet"
+            };
+            res.writeHead(404, {
+              "Content-type": "application/json"
+            });
+            return res.end(JSON.stringify(response));
+          } else {
+            dateobj = new Date();
+            if (item.expires < dateobj.getTime()) {
+              response = {
+                message: "Session expires, please login again"
+              };
+              res.writeHead(500, {
+                "Content-type": "application/json"
+              });
+              res.end(response);
+              return this.cleanupSession(db, collection, token);
+            } else {
+              response = {
+                message: "Session is alive"
+              };
+              res.writeHead(200, {
+                "Content-type": "application/json"
+              });
+              res.end();
+              return db.close();
+            }
+          }
+        });
+      });
+    };
+
+    Engine.prototype.cleanupSession = function(db, collection, token) {
+      return collection.remove({
+        token: token
+      }, function(err, item) {
+        if (err) {
+          throw err;
+        }
+        return db.close();
       });
     };
 
