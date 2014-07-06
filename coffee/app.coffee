@@ -120,7 +120,7 @@ loginAs = (user, password, res) ->
                         dateobj = new Date()
                         if item.expires < dateobj.getTime()
                             # session expires, refresh
-                            cleanupSession(db, collection, item.token)
+                            cleanupSessionWithoutClosing(db, collection, item.token)
                             # also, authenticate
                             authenticate(uid, password, res)
                         else
@@ -283,6 +283,10 @@ cleanupSession = (db, collection, token) ->
     collection.remove({token: token}, (err, item) ->
         throw err if err
         db.close()
+    )
+cleanupSessionWithoutClosing = (db, collection, token) ->
+    collection.remove({token: token}, (err, item) ->
+        throw err if err
     )
 
 getParams = (req) ->

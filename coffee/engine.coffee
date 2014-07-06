@@ -65,8 +65,8 @@ class Engine
                         response =
                             message: "Session expires, please login again"
                         res.writeHead(500, {"Content-type": "application/json"})
-                        res.end(response)
-                        this.cleanupSession(db, collection, token);
+                        res.end(JSON.stringify(response))
+                        cleanupSession(db, collection, token);
                     else
                         response =
                             message:"Session is alive"
