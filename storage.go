@@ -14,12 +14,12 @@ const (
 func getSessionAndDB() (*mgo.Session, *mgo.Database) {
 	mongoURI := os.Getenv("MONGOHQ_URL")
 	if mongoURI == "" {
-		mongoURI = "mongodb://localhost" + MONGO_DATABSE_NAME
+		mongoURI = "mongodb://localhost/" + MONGO_DATABSE_NAME
 	}
 	session, err := mgo.DialWithTimeout(mongoURI, time.Duration(3)*time.Second)
-	session.SetSafe(&mgo.Safe{})
 	if err != nil {
 		panic("Coulnd't dial")
 	}
+	session.SetSafe(&mgo.Safe{})
 	return session, session.DB(MONGO_DATABSE_NAME)
 }

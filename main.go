@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/codegangsta/negroni"
 	"net/http"
-	"net/url"
 	"os"
 )
 
@@ -12,11 +11,8 @@ func main() {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/loginAs", func(w http.ResponseWriter, req *http.Request) {
-		u, err := url.Parse(os.Getenv("MONGOHQ_URL"))
-		if err != nil {
-			panic("error")
-		}
-		fmt.Fprintf(w, "scheme:%s, user:%s, username:%s ", u.Scheme, u.User, u.User.Username())
+		session, db := getSessionAndDB()
+		fmt.Fprintf(w, "scheme:%#v, %#v", session, db)
 	})
 
 	n := negroni.Classic()
