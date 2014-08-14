@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/codegangsta/negroni"
+	"github.com/shinpei/comstock/model"
 	"net/http"
 	"os"
 )
@@ -12,7 +13,14 @@ func main() {
 
 	mux.HandleFunc("/loginAs", func(w http.ResponseWriter, req *http.Request) {
 		session, db := getSessionAndDB()
-		fmt.Fprintf(w, "scheme:%#v, %#v", session, db)
+		fmt.Fprintf(w, "scheme:%#v, %#v<p>", session, db)
+		c := db.C("command")
+		iter := c.Find(nil).Iter()
+		var result model.Command
+		for iter.Next(&result) {
+			fmt.Fprintf(w, "%#v<br>", result.Cmd)
+		}
+
 	})
 
 	n := negroni.Classic()
