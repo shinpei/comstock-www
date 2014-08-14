@@ -11,8 +11,11 @@ func main() {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/loginAs", func(w http.ResponseWriter, req *http.Request) {
-		mongoURI := os.Getenv("MONGOHQ_URL")
-		fmt.Fprintf(w, "%s\n", mongoURI)
+		u, err := url.Parse(os.Getenv("MONGOHQ_URL"))
+		if err != nil {
+			panic("error")
+		}
+		fmt.Fprintf(w, "scheme:%s, user:%s, username:%s ", u.Scheme, u.User, u.User.Username())
 	})
 
 	n := negroni.Classic()
