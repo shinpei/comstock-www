@@ -1,10 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"github.com/codegangsta/negroni"
-	"github.com/shinpei/comstock/model"
-	"log"
+	"github.com/shinpei/comstock-www/model"
 	"net/http"
 	"os"
 )
@@ -14,13 +12,7 @@ func main() {
 	_, db := getSessionAndDB()
 
 	mux.HandleFunc("/loginAs", func(w http.ResponseWriter, req *http.Request) {
-		c := db.C("command")
-		iter := c.Find(nil).Iter()
-		log.Println(iter)
-		var result model.Command
-		for iter.Next(&result) {
-			fmt.Fprintf(w, "%#v<br>", result.Cmd)
-		}
+		LoginAs(db, model.CreateLoginInfo("hoge", "hi"))
 
 	})
 
