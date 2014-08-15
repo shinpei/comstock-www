@@ -2,6 +2,7 @@ package main
 
 import (
 	"labix.org/v2/mgo"
+	"net/url"
 	"os"
 	"time"
 )
@@ -15,10 +16,16 @@ func getSessionAndDB() (*mgo.Session, *mgo.Database) {
 	if mongoURI == "" {
 		mongoURI = "mongodb://localhost/" + MONGO_DATABSE_NAME
 	}
+	u, err := url.Parse(mongoURI)
+	if err != nil {
+		panic("couldn't parse mongouri")
+	}
+	dbname := u.Path
+	println("dbname=>", dbname[1:])
 	session, err := mgo.DialWithTimeout(mongoURI, time.Duration(3)*time.Second)
 	if err != nil {
 		panic("Coulnd't dial")
 	}
 	session.SetSafe(&mgo.Safe{})
-	return session, session.DB(MONGO_DATABSE_NAME)
+	return session, session.DB(dbname)
 }
