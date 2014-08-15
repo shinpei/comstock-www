@@ -21,7 +21,8 @@ func getSessionAndDB() (*mgo.Session, *mgo.Database) {
 		panic("couldn't parse mongouri")
 	}
 	dbname := u.Path
-	println("dbname=>", dbname[1:])
+	dbname = dbname[1:] // remove slash
+	println("dbname=>", dbname)
 	session, err := mgo.DialWithTimeout(mongoURI, time.Duration(3)*time.Second)
 	if err != nil {
 		panic("Coulnd't dial")
