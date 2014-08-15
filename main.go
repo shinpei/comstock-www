@@ -12,8 +12,8 @@ func main() {
 	_, db := getSessionAndDB()
 
 	mux.HandleFunc("/loginAs", func(w http.ResponseWriter, req *http.Request) {
+		println(db)
 		LoginAs(db, model.CreateLoginInfo("hoge", "hi"))
-
 	})
 
 	n := negroni.Classic()
