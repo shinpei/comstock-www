@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	AUTH_COLLECTION string = "command"
+	AUTH_COLLECTION string = "authinfo"
 )
 
 func LoginAs(db *mgo.Database, info *model.LoginInfo) {

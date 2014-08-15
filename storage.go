@@ -7,8 +7,7 @@ import (
 )
 
 const (
-	MONGO_DATABSE_NAME    string = "comstock"
-	MONGO_COLLECTION_USER        = "user"
+	MONGO_DATABSE_NAME string = "comstock-www"
 )
 
 func getSessionAndDB() (*mgo.Session, *mgo.Database) {
