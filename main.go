@@ -4,18 +4,19 @@ import (
 	"fmt"
 	"github.com/codegangsta/negroni"
 	"github.com/shinpei/comstock/model"
+	"log"
 	"net/http"
 	"os"
 )
 
 func main() {
 	mux := http.NewServeMux()
+	_, db := getSessionAndDB()
 
 	mux.HandleFunc("/loginAs", func(w http.ResponseWriter, req *http.Request) {
-		session, db := getSessionAndDB()
-		fmt.Fprintf(w, "scheme:%#v, %#v<p>", session, db)
 		c := db.C("command")
 		iter := c.Find(nil).Iter()
+		log.Println(iter)
 		var result model.Command
 		for iter.Next(&result) {
 			fmt.Fprintf(w, "%#v<br>", result.Cmd)
@@ -31,7 +32,5 @@ func main() {
 	} else {
 		port = os.Getenv("PORT")
 	}
-	//session, db := getSessionAndDB()
-
 	n.Run(":" + port)
 }
