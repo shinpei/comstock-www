@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/codegangsta/negroni"
 	"github.com/shinpei/comstock-www/model"
+	cmodel "github.com/shinpei/comstock/model"
 	"net/http"
 	"net/url"
 	"os"
@@ -15,7 +16,15 @@ func main() {
 	_, db := getSessionAndDB()
 
 	mux.HandleFunc("/loginAs", func(w http.ResponseWriter, req *http.Request) {
-		res, err := LoginAs(db, model.CreateLoginInfo("hoge", "hi"))
+		// make sure param exists
+		params, _ := url.ParseQuery(req.URL.RawQuery)
+		if params["mail"] == nil || params["password"] == nil {
+			// error
+			http.Error(w, "Invalid request", http.StatusBadRequest)
+			return
+		}
+
+		res, err := LoginAs(db, model.CreateLoginRequest(params["mail"][0], params["password"][0]))
 		resJson, err := json.Marshal(res)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -24,11 +33,16 @@ func main() {
 		w.Header().Set("Content-type", "application/json")
 		w.Write(resJson)
 	})
+
 	mux.HandleFunc("/checkSession", func(w http.ResponseWriter, req *http.Request) {
 		// make sure param exists
 		m, _ := url.ParseQuery(req.URL.RawQuery)
 		if m["authinfo"] != nil {
-			CheckSession(db, m["authinfo"][0])
+			err := CheckSession(db, m["authinfo"][0])
+			if err != cmodel.ErrSessionNotFound {
+				http.Error(w, err.Error(), http.StatusNotFound)
+				return
+			}
 		} else {
 			// error
 			fmt.Println("Error, check session requires query")
