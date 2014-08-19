@@ -1,15 +1,11 @@
 package model
 
-import (
-	"time"
-)
-
 type Session struct {
-	token   string
-	uid     int
-	expires time.Time
+	Token   string
+	UID     int
+	Expires int // TODO: replace it with time
 }
 
 func CreateSession(token string, uid int) *Session {
-	return &Session{token: token, uid: uid}
+	return &Session{Token: token, UID: uid}
 }

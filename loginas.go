@@ -31,14 +31,23 @@ func CheckSession(db *mgo.Database, token string) (err error) {
 
 func LoginAs(db *mgo.Database, l *model.LoginRequest) (s *model.Session, err error) {
 	c := db.C(USER_COLLECTION)
-	q := c.Find(bson.M{"mail": l.Mail()})
-	count, _ := q.Count()
-	if count == 1 {
-		// found user
 
-	} else {
-		log.Println("Counln't find user")
-		err = cmodel.ErrUserNotFound
+	item := model.User{}
+	iter := c.Find(nil).Limit(100).Iter()
+	for iter.Next(&item) {
+		log.Printf("%#v", item)
 	}
+
+	/*
+		err = c.Find(bson.M{"mail": l.Mail()}).One(&item)
+		if err != nil {
+			log.Println("Counln't find user")
+			err = cmodel.ErrUserNotFound
+			return
+		}
+		// found user
+		log.Printf("item;%#v\n", item)
+		log.Println("mail:'", item.Mail(), "'")
+	*/
 	return
 }

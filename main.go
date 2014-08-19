@@ -25,6 +25,10 @@ func main() {
 		}
 
 		res, err := LoginAs(db, model.CreateLoginRequest(params["mail"][0], params["password"][0]))
+		if err == cmodel.ErrUserNotFound || err == cmodel.ErrIncorrectPassword {
+			http.Error(w, err.Error(), http.StatusForbidden)
+			return
+		}
 		resJson, err := json.Marshal(res)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
