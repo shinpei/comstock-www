@@ -1,7 +1,7 @@
 package main
 
 import (
-	"encoding/json"
+	//	"encoding/json"
 	"fmt"
 	"github.com/codegangsta/negroni"
 	"github.com/shinpei/comstock-www/model"
@@ -13,9 +13,10 @@ import (
 
 func main() {
 	mux := http.NewServeMux()
-	_, db := getSessionAndDB()
 
 	mux.HandleFunc("/loginAs", func(w http.ResponseWriter, req *http.Request) {
+		session, db := getSessionAndDB()
+
 		// make sure param exists
 		params, _ := url.ParseQuery(req.URL.RawQuery)
 		if params["mail"] == nil || params["password"] == nil {
@@ -23,22 +24,31 @@ func main() {
 			http.Error(w, "Invalid request", http.StatusBadRequest)
 			return
 		}
-
-		res, err := LoginAs(db, model.CreateLoginRequest(params["mail"][0], params["password"][0]))
+		fmt.Printf("login request mail:%#v, %#v", params["mail"], params["mail"][0])
+		s, err := LoginAs(db, model.CreateLoginRequest(params["mail"][0], params["password"][0]))
 		if err == cmodel.ErrUserNotFound || err == cmodel.ErrIncorrectPassword {
 			http.Error(w, err.Error(), http.StatusForbidden)
 			return
 		}
-		resJson, err := json.Marshal(res)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+		/*
+			resJson, err := json.Marshal(s.Token)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+		*/
 		w.Header().Set("Content-type", "application/json")
-		w.Write(resJson)
+		if err == cmodel.ErrAlreadyLogin {
+			w.WriteHeader(http.StatusConflict)
+
+		}
+		w.Write([]byte(s.Token))
+		session.Close()
 	})
 
 	mux.HandleFunc("/checkSession", func(w http.ResponseWriter, req *http.Request) {
+		session, db := getSessionAndDB()
+
 		// make sure param exists
 		m, _ := url.ParseQuery(req.URL.RawQuery)
 		if m["authinfo"] != nil {
@@ -53,6 +63,7 @@ func main() {
 			http.Error(w, "session check needs parameters", http.StatusBadRequest)
 			return
 		}
+		session.Close()
 	})
 
 	n := negroni.Classic()

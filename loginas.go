@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/shinpei/comstock-www/model"
 	cmodel "github.com/shinpei/comstock/model"
 	"labix.org/v2/mgo"
@@ -31,23 +32,48 @@ func CheckSession(db *mgo.Database, token string) (err error) {
 
 func LoginAs(db *mgo.Database, l *model.LoginRequest) (s *model.Session, err error) {
 	c := db.C(USER_COLLECTION)
+	user := model.User{}
 
-	item := model.User{}
-	iter := c.Find(nil).Limit(100).Iter()
-	for iter.Next(&item) {
-		log.Printf("%#v", item)
+	log.Println("l.Mail:", l.Mail())
+	err = c.Find(bson.M{"mail": l.Mail()}).One(&user)
+	if err != nil {
+		log.Println("Counln't find user")
+		err = cmodel.ErrUserNotFound
+		return
 	}
+	// found user
+	log.Printf("user;%#v\n", user)
+	log.Println("mail:'", user.Mail, "'")
+	// close db connection??
 
-	/*
-		err = c.Find(bson.M{"mail": l.Mail()}).One(&item)
+	c = db.C(SESSION_COLLECTON)
+	s = new(model.Session)
+	err = c.Find(bson.M{"uid": user.UID}).One(&s)
+	log.Println("err:%#v", s)
+	if err != nil {
+		// session not found. authenticate
+		err = authenticateUser(db, user.UID)
 		if err != nil {
-			log.Println("Counln't find user")
-			err = cmodel.ErrUserNotFound
 			return
 		}
-		// found user
-		log.Printf("item;%#v\n", item)
-		log.Println("mail:'", item.Mail(), "'")
-	*/
+	} else {
+		// TODO: session found. update lastlogin
+		log.Println("session:", s.Token)
+		err = cmodel.ErrAlreadyLogin
+	}
+	return
+}
+
+func authenticateUser(db *mgo.Database, uid int) (err error) {
+	c := db.C(AUTH_COLLECTION)
+	auth := model.Auth{}
+	err = c.Find(bson.M{"uid": uid}).One(&auth)
+	if err != nil {
+		// password not found
+		fmt.Printf("password:%#v\n", auth.Password)
+	} else {
+		err = cmodel.ErrIncorrectPassword
+		return
+	}
 	return
 }
