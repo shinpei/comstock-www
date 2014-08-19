@@ -6,6 +6,7 @@ import (
 	"github.com/codegangsta/negroni"
 	"github.com/shinpei/comstock-www/model"
 	cmodel "github.com/shinpei/comstock/model"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -42,6 +43,7 @@ func main() {
 			w.WriteHeader(http.StatusConflict)
 
 		}
+
 		w.Write([]byte(s.Token))
 		session.Close()
 	})
@@ -59,8 +61,26 @@ func main() {
 			}
 		} else {
 			// error
-			fmt.Println("Error, check session requires query")
+			fmt.Println("Error, check session requires param")
 			http.Error(w, "session check needs parameters", http.StatusBadRequest)
+			return
+		}
+		session.Close()
+	})
+
+	mux.HandleFunc("/list", func(w http.ResponseWriter, req *http.Request) {
+		session, db := getSessionAndDB()
+		m, _ := url.ParseQuery(req.URL.RawQuery)
+		if m["authinfo"] != nil {
+			err := ListCommands(db, m["authinfo"][0])
+			if err != cmodel.ErrSessionNotFound {
+				http.Error(w, err.Error(), http.StatusNotFound)
+				return
+			}
+		} else {
+			// error
+			log.Println("Error, check session requires param")
+			http.Error(w, "Session check needs parameters", http.StatusBadGateway)
 			return
 		}
 		session.Close()
