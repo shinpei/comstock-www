@@ -8,7 +8,7 @@ import (
 	"log"
 )
 
-func ListCommands(db *mgo.Database, token string) (cmds []model.CommandItem, err error) {
+func ListCommands(db *mgo.Database, token string) (cmds []cmodel.Command, err error) {
 	user, err := GetUserSession(db, token)
 	if err != nil {
 		if err == cmodel.ErrSessionNotFound {
@@ -23,7 +23,8 @@ func ListCommands(db *mgo.Database, token string) (cmds []model.CommandItem, err
 	iter := c.Find(bson.M{"uid": user.UID}).Limit(100).Iter()
 	defer iter.Close()
 	for iter.Next(&cmd) {
-		cmds = append(cmds, cmd)
+
+		cmds = append(cmds, cmodel.Command{Cmd: cmd.Data.Command, Timestamp: cmd.Date})
 	}
 
 	return
