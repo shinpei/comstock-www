@@ -1,7 +1,7 @@
 package main
 
 import (
-	//	"encoding/json"
+	"encoding/json"
 	"fmt"
 	"github.com/codegangsta/negroni"
 	"github.com/shinpei/comstock-www/model"
@@ -31,13 +31,6 @@ func main() {
 			http.Error(w, err.Error(), http.StatusForbidden)
 			return
 		}
-		/*
-			resJson, err := json.Marshal(s.Token)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-		*/
 		w.Header().Set("Content-type", "application/json")
 		if err == cmodel.ErrAlreadyLogin {
 			w.WriteHeader(http.StatusConflict)
@@ -72,11 +65,17 @@ func main() {
 		session, db := getSessionAndDB()
 		m, _ := url.ParseQuery(req.URL.RawQuery)
 		if m["authinfo"] != nil {
-			err := ListCommands(db, m["authinfo"][0])
-			if err != cmodel.ErrSessionNotFound {
+			cmds, err := ListCommands(db, m["authinfo"][0])
+			if err == cmodel.ErrSessionNotFound {
 				http.Error(w, err.Error(), http.StatusNotFound)
 				return
 			}
+			resJson, err := json.Marshal(cmds)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			w.Write(resJson)
 		} else {
 			// error
 			log.Println("Error, check session requires param")

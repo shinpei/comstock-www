@@ -22,7 +22,6 @@ func getSessionAndDB() (*mgo.Session, *mgo.Database) {
 	}
 	dbname := u.Path
 	dbname = dbname[1:] // remove slash
-	println("dbname=>", dbname)
 	session, err := mgo.DialWithTimeout(mongoURI, time.Duration(3)*time.Second)
 	if err != nil {
 		panic("Coulnd't dial")
