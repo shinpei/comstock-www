@@ -17,14 +17,10 @@ const (
 
 func CheckSession(db *mgo.Database, token string) (err error) {
 	c := db.C(SESSION_COLLECTON)
-	q := c.Find(bson.M{"token": token})
-	count, _ := q.Count()
-	if count == 1 {
-		// found session
-
-	} else {
-		// not found session. login requires
-		log.Println("Couldn't found session")
+	user := model.Session{}
+	err = c.Find(bson.M{"token": token}).One(&user)
+	if err != nil {
+		// session not found. reject.
 		err = cmodel.ErrSessionNotFound
 	}
 	return

@@ -55,10 +55,10 @@ func main() {
 		m, _ := url.ParseQuery(req.URL.RawQuery)
 		if m["authinfo"] != nil {
 			err := CheckSession(db, m["authinfo"][0])
-			if err != cmodel.ErrSessionNotFound {
+			if err == cmodel.ErrSessionNotFound {
 				http.Error(w, err.Error(), http.StatusNotFound)
-				return
 			}
+			// if pass reaches here, session found. do nothing.
 		} else {
 			// error
 			fmt.Println("Error, check session requires param")
