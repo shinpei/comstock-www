@@ -10,15 +10,17 @@ import (
 )
 
 const (
-	AUTH_COLLECTION   string = "authinfo"
-	USER_COLLECTION   string = "user"
-	SESSION_COLLECTON string = "session"
+	AUTH_COLLECTION    string = "authinfo"
+	USER_COLLECTION    string = "user"
+	SESSION_COLLECTON  string = "session"
+	COMMAND_COLLECTION string = "commands"
 )
 
-func CheckSession(db *mgo.Database, token string) (err error) {
+// maybe refact to GetUserSession
+func GetUserSession(db *mgo.Database, token string) (session *model.Session, err error) {
 	c := db.C(SESSION_COLLECTON)
-	user := model.Session{}
-	err = c.Find(bson.M{"token": token}).One(&user)
+	session = &model.Session{}
+	err = c.Find(bson.M{"token": token}).One(&session)
 	if err != nil {
 		// session not found. reject.
 		err = cmodel.ErrSessionNotFound

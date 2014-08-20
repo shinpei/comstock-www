@@ -2,19 +2,28 @@ package main
 
 import (
 	"github.com/shinpei/comstock-www/model"
-	cmodel "github.com/shinpei/comstock/model"
 	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
+	"log"
 )
 
 func ListCommands(db *mgo.Database, token string) (err error) {
-	c := db.C(SESSION_COLLECTON)
-	user := model.Session{}
-	err = c.Find(bson.M{"token": token}).One(&user)
+	user, err := GetUserSession(db, token)
 	if err != nil {
-		// session not found. reject.
-		err = cmodel.ErrSessionNotFound
 		return
 	}
+
+	c := db.C(COMMAND_COLLECTION)
+	cmd := model.CommandItem{}
+	iter := c.Find(bson.M{"uid": user.UID}).Limit(100).Iter()
+	defer iter.Close()
+
+	if err != nil {
+		return
+	}
+	for iter.Next(&cmd) {
+		log.Println("hi")
+	}
+
 	return
 }
