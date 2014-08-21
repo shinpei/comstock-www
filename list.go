@@ -23,9 +23,7 @@ func ListCommands(db *mgo.Database, token string) (cmds []cmodel.Command, err er
 	iter := c.Find(bson.M{"uid": user.UID}).Limit(100).Iter()
 	defer iter.Close()
 	for iter.Next(&cmd) {
-
 		cmds = append(cmds, cmodel.Command{Cmd: cmd.Data.Command, Timestamp: cmd.Date})
 	}
-
 	return
 }
