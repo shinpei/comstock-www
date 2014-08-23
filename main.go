@@ -17,7 +17,7 @@ func main() {
 
 	mux.HandleFunc("/loginAs", func(w http.ResponseWriter, req *http.Request) {
 		session, db := getSessionAndDB()
-
+		defer session.Close()
 		// make sure param exists
 		params, _ := url.ParseQuery(req.URL.RawQuery)
 		if params["mail"] == nil || params["password"] == nil {
@@ -38,51 +38,48 @@ func main() {
 		}
 
 		w.Write([]byte(s.Token))
-		session.Close()
 	})
 
 	mux.HandleFunc("/checkSession", func(w http.ResponseWriter, req *http.Request) {
 		session, db := getSessionAndDB()
-
+		defer session.Close()
 		// make sure param exists
 		m, _ := url.ParseQuery(req.URL.RawQuery)
-		if m["authinfo"] != nil {
-			_, err := GetUserSession(db, m["authinfo"][0])
-			if err == cmodel.ErrSessionNotFound {
-				http.Error(w, err.Error(), http.StatusNotFound)
-			}
-			// if pass reaches here, session found. do nothing.
-		} else {
+		if m["authinfo"] == nil {
 			// error
 			fmt.Println("Error, check session requires param")
 			http.Error(w, "session check needs parameters", http.StatusBadRequest)
 			return
 		}
-		session.Close()
+		_, err := GetUserSession(db, m["authinfo"][0])
+		if err == cmodel.ErrSessionNotFound {
+			http.Error(w, err.Error(), http.StatusNotFound)
+		}
+		// if pass reaches here, session found. do nothing.
 	})
 
 	mux.HandleFunc("/list", func(w http.ResponseWriter, req *http.Request) {
 		session, db := getSessionAndDB()
+		defer session.Close()
+
 		m, _ := url.ParseQuery(req.URL.RawQuery)
-		if m["authinfo"] != nil {
-			cmds, err := ListCommands(db, m["authinfo"][0])
-			if err == cmodel.ErrSessionNotFound {
-				http.Error(w, err.Error(), http.StatusNotFound)
-				return
-			}
-			resJson, err := json.Marshal(cmds)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			w.Write(resJson)
-		} else {
+		if m["authinfo"] == nil {
 			// error
 			log.Println("Error, check session requires param")
 			http.Error(w, "Session check needs parameters", http.StatusBadGateway)
 			return
 		}
-		session.Close()
+		cmds, err := ListCommands(db, m["authinfo"][0])
+		if err == cmodel.ErrSessionNotFound {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+		resJson, err := json.Marshal(cmds)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Write(resJson)
 	})
 
 	n := negroni.Classic()
