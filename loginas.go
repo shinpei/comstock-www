@@ -72,23 +72,26 @@ func LoginAs(db *mgo.Database, l *model.LoginRequest) (s *model.Session, err err
 		exp := time.Unix(s.Expires, 0)
 		now := time.Now()
 		if exp.Before(now) {
-			// expired!
-			//err = cmodel.ErrSessionExpires
+			// Session expired!
+			// INFO: Made new variable for avoiding shadowing compile error
 			newSession, errAuth := authenticateUser(db, user.UID, l)
 			// update session
 			if errAuth != nil {
+				err = cmodel.ErrServerSystem
 				return
 			}
 			errAuth = c.Update(bson.M{"uid": user.UID}, newSession)
 			if errAuth != nil {
 				s = nil
+				err = cmodel.ErrServerSystem
 				return
 			}
+			log.Println("Session found, and expired, but updated")
 			s = newSession
-
 		} else {
-			err = cmodel.ErrAlreadyLogin
+			log.Println("Session found, but not expired")
 		}
+		err = cmodel.ErrAlreadyLogin
 	}
 	return
 }

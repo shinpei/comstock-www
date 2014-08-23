@@ -30,6 +30,9 @@ func main() {
 		if err == cmodel.ErrUserNotFound || err == cmodel.ErrIncorrectPassword {
 			http.Error(w, err.Error(), http.StatusForbidden)
 			return
+		} else if err == cmodel.ErrServerSystem {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 		w.Header().Set("Content-type", "application/json")
 		if err == cmodel.ErrAlreadyLogin {
