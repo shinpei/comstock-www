@@ -2,7 +2,6 @@ package main
 
 import (
 	"code.google.com/p/go-uuid/uuid"
-	"fmt"
 	"github.com/shinpei/comstock-www/model"
 	cmodel "github.com/shinpei/comstock/model"
 	"labix.org/v2/mgo"
@@ -77,7 +76,7 @@ func LoginAs(db *mgo.Database, l *model.LoginRequest) (s *model.Session, err err
 			newSession, errAuth := authenticateUser(db, user.UID, l)
 			// update session
 			if errAuth != nil {
-				err = cmodel.ErrServerSystem
+				err = errAuth
 				return
 			}
 			errAuth = c.Update(bson.M{"uid": user.UID}, newSession)
@@ -102,12 +101,14 @@ func authenticateUser(db *mgo.Database, uid int, l *model.LoginRequest) (s *mode
 	err = c.Find(bson.M{"uid": uid}).One(&auth)
 	if err != nil {
 		// error occured.
-		fmt.Println("Error occured:", err.Error())
-		fmt.Println("User seems not registered")
+		log.Println("Error occured:", err.Error())
+		log.Println("User seems not registered")
+
 	} else {
 		// check password
 		if auth.Password != l.Pass() {
 			err = cmodel.ErrIncorrectPassword
+			log.Println("Incorrect password")
 			return
 		}
 		// password ok
