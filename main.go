@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 )
 
 func main() {
@@ -99,6 +100,34 @@ func main() {
 		}
 		w.Header().Set("Content-type", "application/json")
 		w.Write([]byte("User added, thank you for registering"))
+
+	})
+
+	mux.HandleFunc("/postCommand", func(w http.ResponseWriter, req *http.Request) {
+		session, db := getSessionAndDB()
+		defer session.Close()
+		m, _ := url.ParseQuery(req.URL.RawQuery)
+		if m["authinfo"] == nil || m["cmd"] == nil {
+			http.Error(w, "Invalid post command requst", http.StatusBadRequest)
+		}
+		PostCommand(db, m["authinfo"][0], m["cmd"][0])
+
+	})
+
+	mux.HandleFunc("/fetchCommandFromNumber", func(w http.ResponseWriter, req *http.Request) {
+		session, db := getSessionAndDB()
+		defer session.Close()
+		m, _ := url.ParseQuery(req.URL.RawQuery)
+		if m["authinfo"] == nil || m["number"] == nil {
+			http.Error(w, "Invalid fetch command request", http.StatusBadRequest)
+			return
+		}
+		cmdNum, err := strconv.Atoi(m["number"][0])
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		FetchCommandFromNumber(db, m["authinfo"][0], cmdNum)
 
 	})
 	n := negroni.Classic()
