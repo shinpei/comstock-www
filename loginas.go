@@ -39,7 +39,6 @@ func GetUserSession(db *mgo.Database, token string) (session *model.Session, err
 func LoginAs(db *mgo.Database, l *model.LoginRequest) (s *model.Session, err error) {
 	c := db.C(USER_COLLECTION)
 	user := model.User{}
-	log.Println("SHINPEI!")
 	log.Println("l.Mail:", l.Mail())
 	err = c.Find(bson.M{"mail": l.Mail()}).One(&user)
 	if err != nil {
@@ -59,12 +58,37 @@ func LoginAs(db *mgo.Database, l *model.LoginRequest) (s *model.Session, err err
 		if err != nil {
 			// if error occurs, s is nil
 			s = nil
-			return
 		}
+		// insert session
+		err = c.Insert(s)
+		if err != nil {
+			s = nil
+		}
+
 	} else {
 		// TODO: session found. update lastlogin
-		log.Println("User already logined")
-		err = cmodel.ErrAlreadyLogin
+		log.Println("Session fonud, for user ", l.Mail())
+		// check weather it expires or not
+		exp := time.Unix(s.Expires, 0)
+		now := time.Now()
+		if exp.Before(now) {
+			// expired!
+			//err = cmodel.ErrSessionExpires
+			newSession, errAuth := authenticateUser(db, user.UID, l)
+			// update session
+			if errAuth != nil {
+				return
+			}
+			errAuth = c.Update(bson.M{"uid": user.UID}, newSession)
+			if errAuth != nil {
+				s = nil
+				return
+			}
+			s = newSession
+
+		} else {
+			err = cmodel.ErrAlreadyLogin
+		}
 	}
 	return
 }
@@ -84,10 +108,10 @@ func authenticateUser(db *mgo.Database, uid int, l *model.LoginRequest) (s *mode
 			return
 		}
 		// password ok
-		println("uuid=", uuid.New())
 		c = db.C(SESSION_COLLECTON)
 		s = model.CreateSession(uuid.New(), uid)
-		c.Insert(s)
+		//		err = c.Insert(s) // if it's error, s should be nil
+		//		s = nil
 	}
 	//
 	return
