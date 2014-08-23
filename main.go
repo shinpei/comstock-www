@@ -25,7 +25,7 @@ func main() {
 			http.Error(w, "Invalid request", http.StatusBadRequest)
 			return
 		}
-		fmt.Printf("login request mail:%#v, %#v", params["mail"], params["mail"][0])
+		fmt.Printf("login request mail:%#v, %#v\n", params["mail"], params["mail"][0])
 		s, err := LoginAs(db, model.CreateLoginRequest(params["mail"][0], params["password"][0]))
 		if err == cmodel.ErrUserNotFound || err == cmodel.ErrIncorrectPassword {
 			http.Error(w, err.Error(), http.StatusForbidden)
