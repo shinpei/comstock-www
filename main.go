@@ -97,6 +97,7 @@ func main() {
 			http.Error(w, err.Error(), http.StatusConflict)
 			return
 		}
+		w.Header().Set("Content-type", "application/json")
 		w.Write([]byte("User added, thank you for registering"))
 
 	})

@@ -18,5 +18,22 @@ func RegisterUser(db *mgo.Database, mail string, password string) (err error) {
 		err = cmodel.ErrUserAlreadyExist
 		return
 	}
+	count, err := c.Find(bson.M{}).Count()
+	// TODO: validate mail, password
+	uid := count + 1 // TODO: also, validate uid
+	newUser := model.CreateUserForNewCommer(mail, uid)
+	err = c.Insert(newUser)
+	if err != nil {
+		err = cmodel.ErrServerSystem
+		return
+	}
+	c = db.C(AUTH_COLLECTION)
+	auth := model.CreateAuthForNewComer(uid, password)
+	err = c.Insert(auth)
+	if err != nil {
+		err = cmodel.ErrServerSystem
+		return
+	}
+
 	return
 }
