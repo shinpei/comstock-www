@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/codegangsta/negroni"
 	"github.com/shinpei/comstock-www/model"
 	cmodel "github.com/shinpei/comstock/model"
@@ -25,7 +24,7 @@ func main() {
 			http.Error(w, "Invalid request", http.StatusBadRequest)
 			return
 		}
-		fmt.Printf("login request mail:%#v, %#v\n", params["mail"], params["mail"][0])
+		log.Printf("login request mail:%#v, %#v\n", params["mail"], params["mail"][0])
 		s, err := LoginAs(db, model.CreateLoginRequest(params["mail"][0], params["password"][0]))
 		if err == cmodel.ErrUserNotFound || err == cmodel.ErrIncorrectPassword {
 			http.Error(w, err.Error(), http.StatusForbidden)
@@ -50,7 +49,7 @@ func main() {
 		m, _ := url.ParseQuery(req.URL.RawQuery)
 		if m["authinfo"] == nil {
 			// error
-			fmt.Println("Error, check session requires param")
+			log.Println("Error, check session requires param")
 			http.Error(w, "session check needs parameters", http.StatusBadRequest)
 			return
 		}
@@ -84,7 +83,23 @@ func main() {
 		}
 		w.Write(resJson)
 	})
+	mux.HandleFunc("/registerUser", func(w http.ResponseWriter, req *http.Request) {
+		session, db := getSessionAndDB()
+		defer session.Close()
 
+		m, _ := url.ParseQuery(req.URL.RawQuery)
+		if m["mail"] == nil || m["password"] == nil {
+			http.Error(w, "Invalid register request", http.StatusBadRequest)
+			return
+		}
+		err := RegisterUser(db, m["mail"][0], m["password"][0])
+		if err == cmodel.ErrUserAlreadyExist {
+			http.Error(w, err.Error(), http.StatusConflict)
+			return
+		}
+		w.Write([]byte("User added, thank you for registering"))
+
+	})
 	n := negroni.Classic()
 	n.UseHandler(mux)
 	port := ""

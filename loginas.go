@@ -26,12 +26,10 @@ func GetUserSession(db *mgo.Database, token string) (session *model.Session, err
 		// session not found. reject.
 		err = cmodel.ErrSessionNotFound
 	}
-	// compare time. document's time is unix time
+	// TODO: compare time. document's time is unix time
 	//	unixTime := time.Unix(session.Expires, 0)
 	//	println(unixTime.Format(time.RFC3339))
-	println(session.Expires)
-	println(time.Now().Format(time.RFC3339))
-	println(time.Now().Unix())
+
 	return
 }
 
@@ -65,7 +63,6 @@ func LoginAs(db *mgo.Database, l *model.LoginRequest) (s *model.Session, err err
 		}
 
 	} else {
-		// TODO: session found. update lastlogin
 		log.Println("Session fonud, for user ", l.Mail())
 		// check weather it expires or not
 		exp := time.Unix(s.Expires, 0)
@@ -114,9 +111,6 @@ func authenticateUser(db *mgo.Database, uid int, l *model.LoginRequest) (s *mode
 		// password ok
 		c = db.C(SESSION_COLLECTON)
 		s = model.CreateSession(uuid.New(), uid)
-		//		err = c.Insert(s) // if it's error, s should be nil
-		//		s = nil
 	}
-	//
 	return
 }
