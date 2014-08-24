@@ -22,7 +22,7 @@ func FetchHandler(w http.ResponseWriter, req *http.Request) {
 	}
 	cmdNum, err := strconv.Atoi(m["number"][0])
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	cmds, err := fetchCommandFromNumber(db, m["authinfo"][0], cmdNum)
