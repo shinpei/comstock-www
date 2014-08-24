@@ -10,7 +10,7 @@ func PostCommand(db *mgo.Database, token string, cmd string) (err error) {
 	if err != nil {
 		return
 	}
-	// check expiration too
+	//TODO: check session expiration
 	c := db.C(COMMAND_COLLECTION)
 	command := model.CreateCommandItem(user.UID, cmd)
 	err = c.Insert(command)

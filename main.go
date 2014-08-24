@@ -82,6 +82,7 @@ func main() {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		w.Header().Set("Content-type", "application/json")
 		w.Write(resJson)
 	})
 	mux.HandleFunc("/registerUser", func(w http.ResponseWriter, req *http.Request) {
@@ -131,11 +132,22 @@ func main() {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		err = FetchCommandFromNumber(db, m["authinfo"][0], cmdNum)
+		cmd, err := FetchCommandFromNumber(db, m["authinfo"][0], cmdNum)
 		if err == cmodel.ErrSessionExpires || err == cmodel.ErrSessionNotFound {
 			http.Error(w, err.Error(), http.StatusForbidden)
 			return
+		} else if err == cmodel.ErrCommandNotFound {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
 		}
+		resJson, err := json.Marshal(cmd)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		log.Println(string(resJson))
+		w.Header().Set("Content-type", "application/json")
+		w.Write(resJson)
 
 	})
 	n := negroni.Classic()
