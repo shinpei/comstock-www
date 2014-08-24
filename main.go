@@ -12,6 +12,10 @@ import (
 	"strconv"
 )
 
+const (
+	Version string = "0.1.4-devel"
+)
+
 func main() {
 	mux := http.NewServeMux()
 
@@ -132,7 +136,7 @@ func main() {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		cmd, err := FetchCommandFromNumber(db, m["authinfo"][0], cmdNum)
+		cmds, err := FetchCommandFromNumber(db, m["authinfo"][0], cmdNum)
 		if err == cmodel.ErrSessionExpires || err == cmodel.ErrSessionNotFound {
 			http.Error(w, err.Error(), http.StatusForbidden)
 			return
@@ -140,7 +144,7 @@ func main() {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
-		resJson, err := json.Marshal(cmd)
+		resJson, err := json.Marshal(cmds)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

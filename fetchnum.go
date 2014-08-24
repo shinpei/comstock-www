@@ -8,7 +8,7 @@ import (
 	"log"
 )
 
-func FetchCommandFromNumber(db *mgo.Database, token string, num int) (command cmodel.Command, err error) {
+func FetchCommandFromNumber(db *mgo.Database, token string, num int) (cmds []cmodel.Command, err error) {
 	user, err := GetUserSession(db, token)
 	if err != nil {
 		return
@@ -22,7 +22,7 @@ func FetchCommandFromNumber(db *mgo.Database, token string, num int) (command cm
 	for iter.Next(&ci) {
 		counter++
 		if counter == num {
-			command = cmodel.Command{Cmd: ci.Data.Command, Timestamp: ci.Date}
+			cmds = append(cmds, cmodel.Command{Cmd: ci.Data.Command, Timestamp: ci.Date})
 			log.Println("Found! ", ci.Data.Command)
 		}
 	}
