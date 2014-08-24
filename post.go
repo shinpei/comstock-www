@@ -4,6 +4,7 @@ import (
 	"github.com/shinpei/comstock-www/model"
 	cmodel "github.com/shinpei/comstock/model"
 	"labix.org/v2/mgo"
+	"log"
 	"net/http"
 	"net/url"
 )
@@ -32,5 +33,8 @@ func postCommand(db *mgo.Database, token string, cmd string) (err error) {
 	c := db.C(COMMAND_COLLECTION)
 	command := model.CreateCommandItem(user.UID, cmd)
 	err = c.Insert(command)
+	if err != nil {
+		log.Println("Cannot save command", err.Error())
+	}
 	return
 }
