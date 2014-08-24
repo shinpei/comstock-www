@@ -6,8 +6,28 @@ import (
 	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
 	"log"
+	"net/http"
+	"net/url"
 )
 
+func RegistUserHandler(w http.ResponseWriter, req *http.Request) {
+	session, db := getSessionAndDB()
+	defer session.Close()
+
+	m, _ := url.ParseQuery(req.URL.RawQuery)
+	if m["mail"] == nil || m["password"] == nil {
+		http.Error(w, "Invalid register request", http.StatusBadRequest)
+		return
+	}
+	err := RegisterUser(db, m["mail"][0], m["password"][0])
+	if err == cmodel.ErrUserAlreadyExist {
+		http.Error(w, err.Error(), http.StatusConflict)
+		return
+	}
+	w.Header().Set("Content-type", "application/json")
+	w.Write([]byte("User added, thank you for registering"))
+
+}
 func RegisterUser(db *mgo.Database, mail string, password string) (err error) {
 	c := db.C(USER_COLLECTION)
 	user := model.User{}

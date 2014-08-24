@@ -1,15 +1,12 @@
 package main
 
 import (
-	"encoding/json"
 	"github.com/codegangsta/negroni"
-	"github.com/shinpei/comstock-www/model"
 	cmodel "github.com/shinpei/comstock/model"
 	"log"
 	"net/http"
 	"net/url"
 	"os"
-	"strconv"
 )
 
 const (
@@ -19,33 +16,7 @@ const (
 func main() {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/loginAs", func(w http.ResponseWriter, req *http.Request) {
-		session, db := getSessionAndDB()
-		defer session.Close()
-		// make sure param exists
-		params, _ := url.ParseQuery(req.URL.RawQuery)
-		if params["mail"] == nil || params["password"] == nil {
-			// error
-			http.Error(w, "Invalid request", http.StatusBadRequest)
-			return
-		}
-		log.Printf("login request mail:%#v, %#v\n", params["mail"], params["mail"][0])
-		s, err := LoginAs(db, model.CreateLoginRequest(params["mail"][0], params["password"][0]))
-		if err == cmodel.ErrUserNotFound || err == cmodel.ErrIncorrectPassword {
-			http.Error(w, err.Error(), http.StatusForbidden)
-			return
-		} else if err == cmodel.ErrServerSystem {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		w.Header().Set("Content-type", "application/json")
-		if err == cmodel.ErrAlreadyLogin {
-			w.WriteHeader(http.StatusConflict)
-
-		}
-
-		w.Write([]byte(s.Token))
-	})
+	mux.HandleFunc("/loginAs", LoginAsHandler)
 
 	mux.HandleFunc("/checkSession", func(w http.ResponseWriter, req *http.Request) {
 		session, db := getSessionAndDB()
@@ -65,95 +36,11 @@ func main() {
 		// if pass reaches here, session found. do nothing.
 	})
 
-	mux.HandleFunc("/list", func(w http.ResponseWriter, req *http.Request) {
-		session, db := getSessionAndDB()
-		defer session.Close()
-
-		m, _ := url.ParseQuery(req.URL.RawQuery)
-		if m["authinfo"] == nil {
-			// error
-			log.Println("Error, check session requires param")
-			http.Error(w, "Session check needs parameters", http.StatusBadGateway)
-			return
-		}
-		cmds, err := ListCommands(db, m["authinfo"][0])
-		if err == cmodel.ErrSessionNotFound {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-		resJson, err := json.Marshal(cmds)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		w.Header().Set("Content-type", "application/json")
-		w.Write(resJson)
-	})
-	mux.HandleFunc("/registerUser", func(w http.ResponseWriter, req *http.Request) {
-		session, db := getSessionAndDB()
-		defer session.Close()
-
-		m, _ := url.ParseQuery(req.URL.RawQuery)
-		if m["mail"] == nil || m["password"] == nil {
-			http.Error(w, "Invalid register request", http.StatusBadRequest)
-			return
-		}
-		err := RegisterUser(db, m["mail"][0], m["password"][0])
-		if err == cmodel.ErrUserAlreadyExist {
-			http.Error(w, err.Error(), http.StatusConflict)
-			return
-		}
-		w.Header().Set("Content-type", "application/json")
-		w.Write([]byte("User added, thank you for registering"))
-
-	})
-
-	mux.HandleFunc("/postCommand", func(w http.ResponseWriter, req *http.Request) {
-		session, db := getSessionAndDB()
-		defer session.Close()
-		m, _ := url.ParseQuery(req.URL.RawQuery)
-		if m["authinfo"] == nil || m["cmd"] == nil {
-			http.Error(w, "Invalid post command requst", http.StatusBadRequest)
-		}
-		err := PostCommand(db, m["authinfo"][0], m["cmd"][0])
-		if err == cmodel.ErrSessionExpires || err == cmodel.ErrSessionNotFound {
-			http.Error(w, err.Error(), http.StatusForbidden)
-			return
-		}
-		w.Write([]byte("Success"))
-	})
-
-	mux.HandleFunc("/fetchCommandFromNumber", func(w http.ResponseWriter, req *http.Request) {
-		session, db := getSessionAndDB()
-		defer session.Close()
-		m, _ := url.ParseQuery(req.URL.RawQuery)
-		if m["authinfo"] == nil || m["number"] == nil {
-			http.Error(w, "Invalid fetch command request", http.StatusBadRequest)
-			return
-		}
-		cmdNum, err := strconv.Atoi(m["number"][0])
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		cmds, err := FetchCommandFromNumber(db, m["authinfo"][0], cmdNum)
-		if err == cmodel.ErrSessionExpires || err == cmodel.ErrSessionNotFound {
-			http.Error(w, err.Error(), http.StatusForbidden)
-			return
-		} else if err == cmodel.ErrCommandNotFound {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-		resJson, err := json.Marshal(cmds)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		log.Println(string(resJson))
-		w.Header().Set("Content-type", "application/json")
-		w.Write(resJson)
-
-	})
+	mux.HandleFunc("/list", ListHandler)
+	mux.HandleFunc("/registerUser", RegistUserHandler)
+	mux.HandleFunc("/postCommand", PostCommandHandler)
+	mux.HandleFunc("/fetchCommandFromNumber", FetchHandler)
+	mux.HandleFunc("/removeOne", RemoveOneHandler)
 	n := negroni.Classic()
 	n.UseHandler(mux)
 	port := ""

@@ -7,6 +7,8 @@ import (
 	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
 	"log"
+	"net/http"
+	"net/url"
 	"time"
 )
 
@@ -33,7 +35,35 @@ func GetUserSession(db *mgo.Database, token string) (session *model.Session, err
 	return
 }
 
-func LoginAs(db *mgo.Database, l *model.LoginRequest) (s *model.Session, err error) {
+func LoginAsHandler(w http.ResponseWriter, req *http.Request) {
+	session, db := getSessionAndDB()
+	defer session.Close()
+	// make sure param exists
+	params, _ := url.ParseQuery(req.URL.RawQuery)
+	if params["mail"] == nil || params["password"] == nil {
+		// error
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+	log.Printf("login request mail:%#v, %#v\n", params["mail"], params["mail"][0])
+	s, err := loginAs(db, model.CreateLoginRequest(params["mail"][0], params["password"][0]))
+	if err == cmodel.ErrUserNotFound || err == cmodel.ErrIncorrectPassword {
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	} else if err == cmodel.ErrServerSystem {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-type", "application/json")
+	if err == cmodel.ErrAlreadyLogin {
+		w.WriteHeader(http.StatusConflict)
+
+	}
+
+	w.Write([]byte(s.Token))
+}
+
+func loginAs(db *mgo.Database, l *model.LoginRequest) (s *model.Session, err error) {
 	c := db.C(USER_COLLECTION)
 	user := model.User{}
 	log.Println("l.Mail:", l.Mail())
