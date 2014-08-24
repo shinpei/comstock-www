@@ -80,7 +80,7 @@ func loginAs(db *mgo.Database, l *model.LoginRequest) (s *model.Session, err err
 	if err != nil {
 		// session not found. authenticate
 		log.Println("Error occured. check it: ", err.Error())
-		s, err = authenticateUser(db, user.UID, l)
+		s, err = authenticateUser(db, user.UID, l, nil)
 		if err != nil {
 			// if error occurs, s is nil
 			s = nil
@@ -100,7 +100,7 @@ func loginAs(db *mgo.Database, l *model.LoginRequest) (s *model.Session, err err
 		if exp.Before(now) {
 			// Session expired!
 			// INFO: Made new variable for avoiding shadowing compile error
-			newSession, errAuth := authenticateUser(db, user.UID, l, s.ID)
+			newSession, errAuth := authenticateUser(db, user.UID, l, &s.ID)
 			// update session
 			if errAuth != nil {
 				err = errAuth
@@ -124,16 +124,13 @@ func loginAs(db *mgo.Database, l *model.LoginRequest) (s *model.Session, err err
 	return
 }
 
-//TODO: seperate auth for new session or updating existing session
-func authenticateUser(db *mgo.Database, uid int, l *model.LoginRequest, updateForExistingID bson.ObjectId) (s *model.Session, err error) {
+func authenticateUser(db *mgo.Database, uid int, l *model.LoginRequest, updateForExistingID *bson.ObjectId) (s *model.Session, err error) {
 	c := db.C(AUTH_COLLECTION)
 	auth := model.Auth{}
 	err = c.Find(bson.M{"uid": uid}).One(&auth)
 	if err != nil {
 		// error occured.
-		log.Println("Error occured:", err.Error())
-		log.Println("User seems not registered")
-
+		log.Println("User seems not registered:", err.Error())
 	} else {
 		// check password
 		if auth.Password != l.Pass() {
@@ -141,10 +138,11 @@ func authenticateUser(db *mgo.Database, uid int, l *model.LoginRequest, updateFo
 			log.Println("Incorrect password")
 			return
 		}
-		// password ok
-		//		if updateForExistingID != nil {
-		//			s = model.UpdateSessionToken(updateForExistingID, uuid.New(), uid)
-		//		}
+		if updateForExistingID != nil {
+			s = model.UpdateSessionToken(updateForExistingID, uuid.New(), uid)
+		} else {
+			s = model.CreateNewSession(uuid.New(), uid)
+		}
 	}
 
 	return

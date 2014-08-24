@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/codegangsta/negroni"
+	"log"
 	"net/http"
 	"os"
 )
@@ -29,5 +30,7 @@ func main() {
 	} else {
 		port = os.Getenv("PORT")
 	}
+	log.Printf("type of nil:%T\n", nil)
+	log.Println("Start webserver")
 	n.Run(":" + port)
 }

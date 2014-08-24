@@ -2,6 +2,7 @@ package model
 
 import (
 	"labix.org/v2/mgo/bson"
+	"log"
 	"time"
 )
 
@@ -12,9 +13,10 @@ type Session struct {
 	Expires int64 // TODO: replace it with time
 }
 
-func CreateSession(token string, uid int) *Session {
-	return &Session{Token: token, UID: uid, Expires: time.Now().Unix()}
+func CreateNewSession(token string, uid int) *Session {
+	return &Session{ID: bson.NewObjectId(), Token: token, UID: uid, Expires: time.Now().Unix()}
 }
-func UpdateSessionToken(id bson.ObjectId, token string, uid int) *Session {
-	return &Session{ID: id, Token: token, UID: uid, Expires: time.Now().Unix()}
+func UpdateSessionToken(id *bson.ObjectId, token string, uid int) *Session {
+	log.Printf("Writing : %#v\n", *id)
+	return &Session{ID: *id, Token: token, UID: uid, Expires: time.Now().Unix()}
 }
