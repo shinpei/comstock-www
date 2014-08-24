@@ -110,8 +110,12 @@ func main() {
 		if m["authinfo"] == nil || m["cmd"] == nil {
 			http.Error(w, "Invalid post command requst", http.StatusBadRequest)
 		}
-		PostCommand(db, m["authinfo"][0], m["cmd"][0])
-
+		err := PostCommand(db, m["authinfo"][0], m["cmd"][0])
+		if err == cmodel.ErrSessionExpires || err == cmodel.ErrSessionNotFound {
+			http.Error(w, err.Error(), http.StatusForbidden)
+			return
+		}
+		w.Write([]byte("Success"))
 	})
 
 	mux.HandleFunc("/fetchCommandFromNumber", func(w http.ResponseWriter, req *http.Request) {
@@ -127,7 +131,11 @@ func main() {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		FetchCommandFromNumber(db, m["authinfo"][0], cmdNum)
+		err = FetchCommandFromNumber(db, m["authinfo"][0], cmdNum)
+		if err == cmodel.ErrSessionExpires || err == cmodel.ErrSessionNotFound {
+			http.Error(w, err.Error(), http.StatusForbidden)
+			return
+		}
 
 	})
 	n := negroni.Classic()
