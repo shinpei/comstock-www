@@ -73,7 +73,6 @@ func loginAs(db *mgo.Database, l *model.LoginRequest) (s *model.Session, err err
 		err = cmodel.ErrUserNotFound
 		return
 	}
-	// close db connection??
 
 	c = db.C(SESSION_COLLECTON)
 	s = new(model.Session)
@@ -89,6 +88,7 @@ func loginAs(db *mgo.Database, l *model.LoginRequest) (s *model.Session, err err
 		// insert session
 		err = c.Insert(s)
 		if err != nil {
+			log.Println("Cannot write session, ", err.Error())
 			s = nil
 		}
 
@@ -100,29 +100,32 @@ func loginAs(db *mgo.Database, l *model.LoginRequest) (s *model.Session, err err
 		if exp.Before(now) {
 			// Session expired!
 			// INFO: Made new variable for avoiding shadowing compile error
-			newSession, errAuth := authenticateUser(db, user.UID, l)
+			newSession, errAuth := authenticateUser(db, user.UID, l, s.ID)
 			// update session
 			if errAuth != nil {
 				err = errAuth
 				return
 			}
+
 			errAuth = c.Update(bson.M{"uid": user.UID}, newSession)
 			if errAuth != nil {
 				s = nil
+				log.Println("Update failed, ", errAuth.Error())
 				err = cmodel.ErrServerSystem
 				return
 			}
 			log.Println("Session found, and expired, but updated")
 			s = newSession
 		} else {
-			log.Println("Session found, but not expired")
+			log.Println("Session found, and it's still avlie")
 		}
 		err = cmodel.ErrAlreadyLogin
 	}
 	return
 }
 
-func authenticateUser(db *mgo.Database, uid int, l *model.LoginRequest) (s *model.Session, err error) {
+//TODO: seperate auth for new session or updating existing session
+func authenticateUser(db *mgo.Database, uid int, l *model.LoginRequest, updateForExistingID bson.ObjectId) (s *model.Session, err error) {
 	c := db.C(AUTH_COLLECTION)
 	auth := model.Auth{}
 	err = c.Find(bson.M{"uid": uid}).One(&auth)
@@ -139,8 +142,10 @@ func authenticateUser(db *mgo.Database, uid int, l *model.LoginRequest) (s *mode
 			return
 		}
 		// password ok
-		c = db.C(SESSION_COLLECTON)
-		s = model.CreateSession(uuid.New(), uid)
+		//		if updateForExistingID != nil {
+		//			s = model.UpdateSessionToken(updateForExistingID, uuid.New(), uid)
+		//		}
 	}
+
 	return
 }
