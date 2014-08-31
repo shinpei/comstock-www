@@ -14,7 +14,7 @@ func CheckSessionHandler(w http.ResponseWriter, req *http.Request) {
 	m, _ := url.ParseQuery(req.URL.RawQuery)
 	if m["authinfo"] == nil {
 		// error
-		log.Println("Error, check session requires param")
+		log.Println("Error, check session requires token")
 		http.Error(w, "session check needs parameters", http.StatusBadRequest)
 		return
 	}

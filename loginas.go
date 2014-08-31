@@ -19,15 +19,16 @@ const (
 	COMMAND_COLLECTION string = "commands"
 )
 
-// maybe refact to GetUserSession
 func GetUserSession(db *mgo.Database, token string) (session *model.Session, err error) {
 	c := db.C(SESSION_COLLECTON)
+	log.Println("token: ", token)
 	session = &model.Session{}
 	err = c.Find(bson.M{"token": token}).One(&session)
 	if err != nil {
 		// session not found. reject.
 		err = cmodel.ErrSessionNotFound
 	}
+
 	// TODO: compare time. document's time is unix time
 	//	unixTime := time.Unix(session.Expires, 0)
 	//	println(unixTime.Format(time.RFC3339))
@@ -42,6 +43,7 @@ func LoginAsHandler(w http.ResponseWriter, req *http.Request) {
 	params, _ := url.ParseQuery(req.URL.RawQuery)
 	if params["mail"] == nil || params["password"] == nil {
 		// error
+		log.Println("Either mail or password is empty for login request")
 		http.Error(w, "Invalid request", http.StatusBadRequest)
 		return
 	}
