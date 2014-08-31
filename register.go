@@ -22,7 +22,7 @@ func RegistUserHandler(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, "Invalid register request", http.StatusBadRequest)
 		return
 	}
-	err := RegisterUser(db, m["mail"][0], m["password"][0])
+	err = RegisterUser(db, m["mail"][0], m["password"][0])
 	if err == cmodel.ErrUserAlreadyExist {
 		http.Error(w, err.Error(), http.StatusConflict)
 		return
