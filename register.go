@@ -14,7 +14,10 @@ func RegistUserHandler(w http.ResponseWriter, req *http.Request) {
 	session, db := getSessionAndDB()
 	defer session.Close()
 
-	m, _ := url.ParseQuery(req.URL.RawQuery)
+	m, err := url.ParseQuery(req.URL.RawQuery)
+	if err != nil {
+		log.Fatalf("Couldn't parse query, %s\n", req.URL.RawQuery)
+	}
 	if m["mail"] == nil || m["password"] == nil {
 		http.Error(w, "Invalid register request", http.StatusBadRequest)
 		return
