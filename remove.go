@@ -31,9 +31,12 @@ func RemoveOneHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	err = removeOne(db, m["token"][0], cmdIdx)
-	if err == cmodel.ErrSessionExpires || err == cmodel.ErrSessionNotFound {
+	if err == cmodel.ErrSessionExpires {
 		http.Error(w, err.Error(), http.StatusForbidden)
 		return
+	} else if err == cmodel.ErrSessionNotFound {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+
 	} else if err == cmodel.ErrServerSystem {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
