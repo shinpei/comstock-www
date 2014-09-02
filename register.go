@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"github.com/shinpei/comstock-www/model"
 	cmodel "github.com/shinpei/comstock/model"
 	"labix.org/v2/mgo"
@@ -22,15 +23,20 @@ func RegistUserHandler(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, "Invalid register request", http.StatusBadRequest)
 		return
 	}
+	w.Header().Set("Content-type", "application/json")
 	err = RegisterUser(db, m["mail"][0], m["password"][0])
+	var resJson []byte
 	if err == cmodel.ErrUserAlreadyExist {
-		http.Error(w, err.Error(), http.StatusConflict)
+		resJson, _ = json.Marshal(map[string]string{"message": "The user already exits with this email. Please try another one"})
+		w.WriteHeader(http.StatusConflict)
+		w.Write(resJson)
 		return
 	}
-	w.Header().Set("Content-type", "application/json")
-	w.Write([]byte("User added, thank you for registering"))
 
+	resJson, _ = json.Marshal(map[string]string{"message": "User added, thank you for registering"})
+	w.Write(resJson)
 }
+
 func RegisterUser(db *mgo.Database, mail string, password string) (err error) {
 	c := db.C(USER_COLLECTION)
 	user := model.User{}
