@@ -49,15 +49,18 @@ func LoginAsHandler(w http.ResponseWriter, req *http.Request) {
 	}
 	log.Printf("login request mail:%#v, %#v\n", params["mail"], params["mail"][0])
 	s, err := loginAs(db, model.CreateLoginRequest(params["mail"][0], params["password"][0]))
-	if err == cmodel.ErrUserNotFound || err == cmodel.ErrIncorrectPassword {
+	if _, ok := err.(*cmodel.UserNotFoundError); ok {
 		http.Error(w, err.Error(), http.StatusForbidden)
 		return
-	} else if err == cmodel.ErrServerSystem {
+	} else if _, ok := err.(*cmodel.IncorrectPasswordError); ok {
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	} else if _, ok := err.(*cmodel.ServerSystemError); ok {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-type", "application/json")
-	if err == cmodel.ErrAlreadyLogin {
+	if _, ok := err.(*cmodel.AlreadyLoginError); ok {
 		w.WriteHeader(http.StatusConflict)
 
 	}
@@ -72,7 +75,7 @@ func loginAs(db *mgo.Database, l *model.LoginRequest) (s *model.Session, err err
 	err = c.Find(bson.M{"mail": l.Mail()}).One(&user)
 	if err != nil {
 		log.Println("Counln't find user, ", l.Mail())
-		err = cmodel.ErrUserNotFound
+		err = &cmodel.UserNotFoundError{}
 		return
 	}
 
@@ -113,7 +116,7 @@ func loginAs(db *mgo.Database, l *model.LoginRequest) (s *model.Session, err err
 			if errAuth != nil {
 				s = nil
 				log.Println("Update failed, ", errAuth.Error())
-				err = cmodel.ErrServerSystem
+				err = &cmodel.ServerSystemError{}
 				return
 			}
 			log.Println("Session found, and expired, but updated")
@@ -121,7 +124,7 @@ func loginAs(db *mgo.Database, l *model.LoginRequest) (s *model.Session, err err
 		} else {
 			log.Println("Session found, and it's still avlie")
 		}
-		err = cmodel.ErrAlreadyLogin
+		err = &cmodel.AlreadyLoginError{}
 	}
 	return
 }
@@ -136,7 +139,7 @@ func authenticateUser(db *mgo.Database, uid int, l *model.LoginRequest, updateFo
 	} else {
 		// check password
 		if auth.Password != l.Pass() {
-			err = cmodel.ErrIncorrectPassword
+			err = &cmodel.IncorrectPasswordError{}
 			log.Println("Incorrect password")
 			return
 		}

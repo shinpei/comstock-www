@@ -44,7 +44,7 @@ func RegisterUser(db *mgo.Database, mail string, password string) (err error) {
 	if err == nil {
 		// existing user.
 		log.Println("Register request issued, but user ", mail, "already exist")
-		err = cmodel.ErrUserAlreadyExist
+		err = &cmodel.UserAlreadyExistError{}
 		return
 	}
 	count, err := c.Find(bson.M{}).Count()
@@ -53,7 +53,7 @@ func RegisterUser(db *mgo.Database, mail string, password string) (err error) {
 	newUser := model.CreateUserForNewCommer(mail, uid)
 	err = c.Insert(newUser)
 	if err != nil {
-		err = &cmodel.ServerSystem{}
+		err = &cmodel.ServerSystemError{}
 		return
 	}
 	c = db.C(AUTH_COLLECTION)

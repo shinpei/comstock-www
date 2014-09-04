@@ -31,16 +31,16 @@ func RemoveOneHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	err = removeOne(db, m["token"][0], cmdIdx)
-	if err == cmodel.ErrSessionExpires {
+	if _, ok := err.(*cmodel.SessionExpiresError); ok {
 		http.Error(w, err.Error(), http.StatusForbidden)
 		return
-	} else if err == cmodel.ErrSessionNotFound {
+	} else if _, ok := err.(*cmodel.SessionNotFoundError); ok {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 
-	} else if err == cmodel.ErrServerSystem {
+	} else if _, ok := err.(*cmodel.ServerSystemError); ok {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
-	} else if err == cmodel.ErrCommandNotFound {
+	} else if _, ok := err.(*cmodel.CommandNotFoundError); ok {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
@@ -64,13 +64,13 @@ func removeOne(db *mgo.Database, token string, num int) (err error) {
 			err = c.RemoveId(id)
 			if err != nil {
 				log.Println("Cannot delete")
-				err = cmodel.ErrServerSystem
+				err = &cmodel.ServerSystemError{}
 				return
 			}
 		}
 	}
 	if counter < num {
-		err = cmodel.ErrCommandNotFound
+		err = &cmodel.CommandNotFoundError{}
 		return
 	}
 
