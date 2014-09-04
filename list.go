@@ -23,7 +23,7 @@ func ListHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	cmds, err := ListCommands(db, m["authinfo"][0])
-	if err == cmodel.ErrSessionNotFound {
+	if _, ok := err.(*cmodel.SessionNotFoundError); ok {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
@@ -38,7 +38,7 @@ func ListHandler(w http.ResponseWriter, req *http.Request) {
 func ListCommands(db *mgo.Database, token string) (cmds []cmodel.Command, err error) {
 	user, err := GetUserSession(db, token)
 	if err != nil {
-		if err == cmodel.ErrSessionNotFound {
+		if _, ok := err.(*cmodel.SessionNotFoundError); ok {
 			return
 		} else {
 			log.Fatal("Crash")

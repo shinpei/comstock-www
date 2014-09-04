@@ -17,7 +17,10 @@ func PostCommandHandler(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, "Invalid post command requst", http.StatusBadRequest)
 	}
 	err := postCommand(db, m["authinfo"][0], m["cmd"][0])
-	if err == cmodel.ErrSessionExpires || err == cmodel.ErrSessionNotFound {
+	if _, ok := err.(*cmodel.SessionExpiresError); ok {
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	} else if _, ok := err.(*cmodel.SessionNotFoundError); ok {
 		http.Error(w, err.Error(), http.StatusForbidden)
 		return
 	}

@@ -26,10 +26,13 @@ func FetchHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	cmds, err := fetchCommandFromNumber(db, m["authinfo"][0], cmdNum)
-	if err == cmodel.ErrSessionExpires || err == cmodel.ErrSessionNotFound {
+	if _, ok := err.(*cmodel.SessionExpiresError); ok {
 		http.Error(w, err.Error(), http.StatusForbidden)
 		return
-	} else if err == cmodel.ErrCommandNotFound {
+	} else if _, ok := err.(*cmodel.SessionNotFoundError); ok {
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	} else if _, ok := err.(*cmodel.CommandNotFoundError); ok {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
@@ -63,8 +66,7 @@ func fetchCommandFromNumber(db *mgo.Database, token string, num int) (cmds []cmo
 		}
 	}
 	if counter < num {
-		err = cmodel.ErrCommandNotFound
-		return
+		err = &cmodel.CommandNotFoundError{}
 	}
 	return
 }

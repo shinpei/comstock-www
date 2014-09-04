@@ -19,7 +19,7 @@ func CheckSessionHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	_, err := GetUserSession(db, m["authinfo"][0])
-	if err == cmodel.ErrSessionNotFound {
+	if _, ok := err.(*cmodel.SessionNotFoundError); ok {
 		http.Error(w, err.Error(), http.StatusNotFound)
 	}
 	// if pass reaches here, session found. do nothing.

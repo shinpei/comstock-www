@@ -26,7 +26,7 @@ func RegistUserHandler(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-type", "application/json")
 	err = RegisterUser(db, m["mail"][0], m["password"][0])
 	var resJson []byte
-	if err == cmodel.ErrUserAlreadyExist {
+	if _, ok := err.(*cmodel.UserAlreadyExistError); ok {
 		resJson, _ = json.Marshal(map[string]string{"message": "The user already exits with this email. Please try another one"})
 		w.WriteHeader(http.StatusConflict)
 		w.Write(resJson)
@@ -53,14 +53,14 @@ func RegisterUser(db *mgo.Database, mail string, password string) (err error) {
 	newUser := model.CreateUserForNewCommer(mail, uid)
 	err = c.Insert(newUser)
 	if err != nil {
-		err = cmodel.ErrServerSystem
+		err = &cmodel.ServerSystem{}
 		return
 	}
 	c = db.C(AUTH_COLLECTION)
 	auth := model.CreateAuthForNewComer(uid, password)
 	err = c.Insert(auth)
 	if err != nil {
-		err = cmodel.ErrServerSystem
+		err = &cmodel.ServerSystemError{}
 		return
 	}
 
