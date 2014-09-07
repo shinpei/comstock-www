@@ -25,23 +25,22 @@
 <div class="wow fadeInRight">
 <small>Stock your command to the cloud</small>
 </div>
-<div class="wow fadeInLeft" style="padding-top:50
-px" ng-controller="MyController">
-
-<form id="loginform" name="loginForm">
-<small class="valid wow" style="color:#1ABC9C" ng-show="getIsSuccess()">{{response}}</small>
-<small class="error wow" style="color:#E74C3C" ng-hide="getIsSuccess()">{{response}}</small>
-<p>
-<input type="input" ng-model="user.mail" ng-pattern="/^.+@.+/" name="mail" value placeholder="Email" class="form-control" required></input>
-<input type="password" ng-model="user.password" ng-maxlength="64" name="password" value placeholder="Password" class="form-control" required></input>
-<small class="error" style="color:#E74C3C" ng-show="loginForm.mail.$error.pattern || loginForm.password.$error.maxlength">NG</small>
-<small class="valid" style="color:#1ABC9C" ng-show="loginForm.mail.$valid && !loginForm.password.$error.maxlength">OK</small>
-<small class="error" style="color:#E74C3C" ng-show="loginForm.password.$error.maxlength">(Max 64 char)</small>
-<p>
-<p><button type="submit" ng-disabled="loginForm.$invalid" ng-click="submitData(user)" class="btn btn-primary" >register</button>
-</form>
-</div> <!-- ngcontroller -->
-<div><img src="https://github.com/shinpei/comstock/blob/master/comstock-demo.gif"></div>
+  <div class="wow fadeInLeft" style="padding-top:50
+				     px" ng-controller="MyController">
+    <form id="loginform" name="loginForm">
+      <small class="valid wow" style="color:#1ABC9C" ng-show="getIsSuccess()">{{response}}</small>
+      <small class="error wow" style="color:#E74C3C" ng-hide="getIsSuccess()">{{response}}</small>
+      <p>
+	<input type="input" ng-model="user.mail" ng-pattern="/^.+@.+/" name="mail" value placeholder="Email" class="form-control" required></input>
+	<input type="password" ng-model="user.password" ng-maxlength="64" name="password" value placeholder="Password" class="form-control" required></input>
+	<small class="error" style="color:#E74C3C" ng-show="loginForm.mail.$error.pattern || loginForm.password.$error.maxlength">NG</small>
+	<small class="valid" style="color:#1ABC9C" ng-show="loginForm.mail.$valid && !loginForm.password.$error.maxlength">OK</small>
+	<small class="error" style="color:#E74C3C" ng-show="loginForm.password.$error.maxlength">(Max 64 char)</small>
+      <p>
+      <p><button type="submit" ng-disabled="loginForm.$invalid" ng-click="submitData(user)" class="btn btn-primary" >register</button>
+    </form>
+  </div> <!-- ngcontroller -->
+<div><img src="https://raw.githubusercontent.com/shinpei/comstock/master/comstock-demo.gif" width=40%></div>
 </div> <!-- demo headline -->
 
 
