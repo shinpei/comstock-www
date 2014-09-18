@@ -1,6 +1,8 @@
 package model
 
 import (
+	"crypto/md5"
+	"io"
 	"labix.org/v2/mgo/bson"
 	"strconv"
 	"time"
@@ -9,7 +11,8 @@ import (
 type CommandItem struct {
 	ID   bson.ObjectId `json:"id" bson:"_id"`
 	UID  int
-	Date string      `json:"date" bson:"date"` // TODO: fix it with time.Time
+	Date string `json:"date" bson:"date"` // TODO: fix it with time.Time
+	Hash []byte
 	Data CommandData // TODO: fix name
 }
 
@@ -19,5 +22,7 @@ type CommandData struct {
 }
 
 func CreateCommandItem(uid int, cmd string) *CommandItem {
-	return &CommandItem{ID: bson.NewObjectId(), UID: uid, Date: strconv.FormatInt(time.Now().Unix()*1000, 10), Data: CommandData{Command: cmd, Desc: ""}}
+	h := md5.New()
+	io.WriteString(h, cmd)
+	return &CommandItem{ID: bson.NewObjectId(), UID: uid, Hash: h.Sum(nil), Date: strconv.FormatInt(time.Now().Unix()*1000, 10), Data: CommandData{Command: cmd, Desc: ""}}
 }
