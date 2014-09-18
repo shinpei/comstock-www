@@ -4,6 +4,7 @@ import (
 	"github.com/shinpei/comstock-www/model"
 	cmodel "github.com/shinpei/comstock/model"
 	"labix.org/v2/mgo"
+	"labix.org/v2/mgo/bson"
 	"log"
 	"net/http"
 	"net/url"
@@ -35,6 +36,21 @@ func postCommand(db *mgo.Database, token string, cmd string) (err error) {
 	//TODO: check session expiration
 	c := db.C(COMMAND_COLLECTION)
 	command := model.CreateCommandItem(user.UID, cmd)
+
+	// check if there're hash commit
+	ci := model.CommandItem{}
+	err = c.Find(bson.M{"hash": command.Hash}).One(&ci)
+	if err != nil {
+		// Not Found also comes here
+		log.Printf("Hash: %s\n", string(command.Hash))
+	} else {
+		log.Printf("Duplication? #%v\n", ci)
+		if command.Data.Command == cmd {
+			log.Printf("Duplicated: %s\n", cmd)
+
+			return
+		}
+	}
 	err = c.Insert(command)
 	if err != nil {
 		log.Println("Cannot save command", err.Error())
