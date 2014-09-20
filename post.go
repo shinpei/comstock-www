@@ -47,7 +47,6 @@ func postCommand(db *mgo.Database, token string, cmd string) (err error) {
 		log.Printf("Duplication? #%v\n", ci)
 		if command.Data.Command == cmd {
 			log.Printf("Duplicated: %s\n", cmd)
-
 			return
 		}
 	}
