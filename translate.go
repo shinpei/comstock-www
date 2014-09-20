@@ -1,22 +1,21 @@
 package main
 
 import (
-	"github.com/shinpei/comstock-www/model"
 	cmodel "github.com/shinpei/comstock/model"
 	"labix.org/v2/mgo"
-	"labix.org/v2/mgo/bson"
-	"log"
+	"net/http"
+	"net/url"
 )
 
 func TranslateHandler(w http.ResponseWriter, req *http.Request) {
 	session, db := getSessionAndDB()
 	defer session.Close()
 	param, _ := url.ParseQuery(req.URL.RawQuery)
-	if param["authinfo"] == nil || aram["authinfo"] == nil {
+	if param["authinfo"] == nil || param["authinfo"] == nil {
 		http.Error(w, "Invalid post command request", http.StatusBadRequest)
 	}
 	err := translateCommand(db, param["authinfo"][0], param["cmd"][0])
-	if _, ok := err.(*cmodelSessionExpiresError); ok {
+	if _, ok := err.(*cmodel.SessionExpiresError); ok {
 		http.Error(w, err.Error(), http.StatusForbidden)
 		return
 	} else if _, ok := err.(*cmodel.SessionNotFoundError); ok {
@@ -27,5 +26,5 @@ func TranslateHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func translateCommand(db *mgo.Database, token string, cmd string) (err error) {
-
+	return
 }
