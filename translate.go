@@ -26,5 +26,10 @@ func TranslateHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func translateCommand(db *mgo.Database, token string, cmd string) (err error) {
+	user, err := GetUserSession(db, token)
+	if err != nil {
+		return
+	}
+	_ = user
 	return
 }
