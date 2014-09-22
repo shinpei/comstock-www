@@ -1,8 +1,10 @@
 package main
 
 import (
+	"github.com/shinpei/comstock-www/model"
 	cmodel "github.com/shinpei/comstock/model"
 	"labix.org/v2/mgo"
+	"labix.org/v2/mgo/bson"
 	"net/http"
 	"net/url"
 )
@@ -30,6 +32,14 @@ func translateCommand(db *mgo.Database, token string, cmd string) (err error) {
 	if err != nil {
 		return
 	}
-	_ = user
+	c := db.C(COMMAND_COLLECTION)
+	iter := c.Find(bson.M{"uid": user.UID}).Limit(100).Iter()
+	defer iter.Close()
+	ci := model.CommandItem{}
+	counter := 0
+	for iter.Next(&ci) {
+		counter++
+	}
+
 	return
 }
