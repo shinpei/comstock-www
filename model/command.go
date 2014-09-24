@@ -1,7 +1,7 @@
 package model
 
 import (
-	"crypto/md5"
+	"crypto/sha1"
 	"io"
 	"labix.org/v2/mgo/bson"
 	"strconv"
@@ -22,7 +22,7 @@ type CommandData struct {
 }
 
 func CreateCommandItem(uid int, cmd string) *CommandItem {
-	h := md5.New()
+	h := sha1.New()
 	io.WriteString(h, cmd)
 	return &CommandItem{ID: bson.NewObjectId(), UID: uid, Hash: h.Sum(nil), Date: strconv.FormatInt(time.Now().Unix()*1000, 10), Data: CommandData{Command: cmd, Desc: ""}}
 }

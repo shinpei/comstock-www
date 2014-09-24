@@ -42,7 +42,7 @@ func postCommand(db *mgo.Database, token string, cmd string) (err error) {
 	err = c.Find(bson.M{"hash": command.Hash}).One(&ci)
 	if err != nil {
 		// Not Found also comes here
-		log.Printf("Hash: %s\n", string(command.Hash))
+		log.Printf("Hash: %x\n", command.Hash)
 	} else {
 		log.Printf("Duplication? #%v\n", ci)
 		if command.Data.Command == cmd {
