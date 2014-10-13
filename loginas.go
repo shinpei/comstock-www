@@ -62,7 +62,6 @@ func LoginAsHandler(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-type", "application/json")
 	if _, ok := err.(*cmodel.AlreadyLoginError); ok {
 		w.WriteHeader(http.StatusConflict)
-
 	}
 
 	w.Write([]byte(s.Token))

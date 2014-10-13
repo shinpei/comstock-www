@@ -22,6 +22,8 @@ func main() {
 	mux.HandleFunc("/postCommand", PostCommandHandler)
 	mux.HandleFunc("/fetchCommandFromNumber", FetchHandler)
 	mux.HandleFunc("/removeOne", RemoveOneHandler)
+	mux.HandleFunc("/postChunkCommands", PostChunkCommandsHandler)
+
 	mux.HandleFunc("/js/angular.min.js.map", func(w http.ResponseWriter, req *http.Request) {
 		return
 	})

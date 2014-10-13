@@ -2,6 +2,7 @@ package model
 
 import (
 	"crypto/sha1"
+	cmodel "github.com/shinpei/comstock/model"
 	"io"
 	"labix.org/v2/mgo/bson"
 	"strconv"
@@ -19,6 +20,12 @@ type CommandItem struct {
 type CommandData struct {
 	Command string // need to
 	Desc    string
+}
+
+func CreateCommandItemFromCommand(uid int, cmd *cmodel.Command) *CommandItem {
+	h := sha1.New()
+	io.WriteString(h, cmd.Cmd)
+	return &CommandItem{ID: bson.NewObjectId(), UID: uid, Hash: h.Sum(nil), Date: strconv.FormatInt(time.Now().Unix()*1000, 10), Data: CommandData{Command: cmd.Cmd, Desc: ""}}
 }
 
 func CreateCommandItem(uid int, cmd string) *CommandItem {
