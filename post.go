@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/shinpei/comstock-www/model"
 	cmodel "github.com/shinpei/comstock/model"
 	"labix.org/v2/mgo"
@@ -26,7 +27,7 @@ func PostCommandHandler(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-
+	fmt.Printf("cmd=>%#v\n", ccmd)
 	// actual save to the mongo
 	err = postCommand(db, m["authinfo"][0], &ccmd)
 	if _, ok := err.(*cmodel.SessionExpiresError); ok {
