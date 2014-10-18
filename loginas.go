@@ -20,13 +20,16 @@ const (
 )
 
 func GetUserSession(db *mgo.Database, token string) (session *model.Session, err error) {
+
 	c := db.C(SESSION_COLLECTON)
-	log.Println("token: ", token)
 	session = &model.Session{}
 	err = c.Find(bson.M{"token": token}).One(&session)
 	if err != nil {
 		// session not found. reject.
+		log.Println("session not found")
 		err = &cmodel.SessionNotFoundError{}
+	} else {
+
 	}
 
 	// TODO: compare time. document's time is unix time

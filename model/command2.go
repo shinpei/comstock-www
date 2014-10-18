@@ -7,24 +7,47 @@ import (
 	"time"
 )
 
-type NewCommandItem struct {
-	ID          bson.ObjectId
+type History struct {
 	UID         int
 	Date        time.Time
-	Hash        []byte
-	Command     string
 	Description string
+	Flow        bson.ObjectId
 }
 
-func CreateNewCommandData(uid int, cmd string, desc string) *NewCommandItem {
+type Flow struct {
+	ID    bson.ObjectId
+	Items []bson.ObjectId
+}
+
+type NewCommandItem struct {
+	ID      bson.ObjectId
+	Hash    []byte
+	Command string
+	Count   int
+}
+
+func CreateNewCommandData(uid int, cmd string, desc string) *History {
 	h := sha1.New()
 	io.WriteString(h, cmd)
-	return &NewCommandItem{
-		ID:          bson.NewObjectId(),
-		UID:         uid,
-		Hash:        h.Sum(nil),
-		Date:        time.Now(),
-		Command:     cmd,
-		Description: desc,
+	ciID := bson.NewObjectId()
+	ci := &NewCommandItem{
+		ID:      ciID,
+		Hash:    h.Sum(nil),
+		Command: cmd,
+		Count:   1,
 	}
+	_ = ci
+	fID := bson.NewObjectId()
+	f := &Flow{
+		ID: fID,
+		//		Items: []bson.ObjectId{ciID},
+	}
+	_ = f
+	return &History{
+		UID:         uid,
+		Date:        time.Now(),
+		Description: desc,
+		Flow:        fID,
+	}
+
 }

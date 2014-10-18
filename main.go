@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/codegangsta/negroni"
-	"log"
+
 	"net/http"
 	"os"
 )
@@ -12,8 +12,8 @@ const (
 )
 
 func main() {
-	mux := http.NewServeMux()
 
+	mux := http.NewServeMux()
 	mux.HandleFunc("/loginAs", LoginAsHandler)
 	mux.HandleFunc("/translate", TranslateHandler)
 	mux.HandleFunc("/checkSession", CheckSessionHandler)
@@ -36,7 +36,11 @@ func main() {
 	} else {
 		port = os.Getenv("PORT")
 	}
-	log.Printf("type of nil:%T\n", nil)
-	log.Println("Start webserver")
+
+	server := NewServer(Config{
+		Port: port,
+	})
+	server.Start()
+
 	n.Run(":" + port)
 }
