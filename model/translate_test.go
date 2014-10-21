@@ -9,8 +9,8 @@ import (
 
 func TestTrans(t *testing.T) {
 	c1 := CreateCommandItem(1, "ls -la")
-	c2 := TranslateCommand1to2(c)
-	AssertEqual(t, c1.Command, c2.Command)
-	AssertEqual(t, c1.UID, c2.UID)
-	fmt.Printf("%#v, %#v\n", c.Date, c2.Date)
+	history := TranslateCommand1to2(c1)
+	AssertEqual(t, c1.Data.Command, history.FlowPtr.ItemsPtr[0].Command)
+	AssertEqual(t, c1.UID, history.UID)
+	fmt.Printf("%#v, %#v\n", c1.Date, history.Date)
 }

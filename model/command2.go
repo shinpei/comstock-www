@@ -28,7 +28,7 @@ type NewCommandItem struct {
 	HitCount int
 }
 
-func CreateNewCommandData(uid int, cmd string, desc string) *History {
+func CreateNewHistory(uid int, cmd string, date time.Time, desc string) *History {
 	h := sha1.New()
 	io.WriteString(h, cmd)
 	ciID := bson.NewObjectId()
@@ -46,7 +46,7 @@ func CreateNewCommandData(uid int, cmd string, desc string) *History {
 	}
 	return &History{
 		UID:         uid,
-		Date:        time.Now(),
+		Date:        date,
 		Description: desc,
 		Flow:        fID,
 		FlowPtr:     f,
