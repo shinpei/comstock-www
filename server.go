@@ -1,3 +1,4 @@
+// initiate comstock server instance with configuration
 package main
 
 import (
@@ -40,8 +41,7 @@ func NewServer(config Config) *Server {
 }
 
 func (s *Server) Start() {
-	s.negroni.UseHandler(s.mux)
-	println("Port: ", s.config.Port)
-	s.negroni.Run(":" + s.config.Port)
 
+	s.negroni.UseHandler(s.mux)
+	s.negroni.Run(":" + s.config.Port)
 }

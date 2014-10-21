@@ -12,18 +12,20 @@ type History struct {
 	Date        time.Time
 	Description string
 	Flow        bson.ObjectId
+	FlowPtr     *Flow
 }
 
 type Flow struct {
-	ID    bson.ObjectId
-	Items []bson.ObjectId
+	ID       bson.ObjectId
+	Items    []bson.ObjectId
+	ItemsPtr []*NewCommandItem
 }
 
 type NewCommandItem struct {
-	ID      bson.ObjectId
-	Hash    []byte
-	Command string
-	Count   int
+	ID       bson.ObjectId
+	Hash     []byte
+	Command  string
+	HitCount int
 }
 
 func CreateNewCommandData(uid int, cmd string, desc string) *History {
@@ -31,23 +33,23 @@ func CreateNewCommandData(uid int, cmd string, desc string) *History {
 	io.WriteString(h, cmd)
 	ciID := bson.NewObjectId()
 	ci := &NewCommandItem{
-		ID:      ciID,
-		Hash:    h.Sum(nil),
-		Command: cmd,
-		Count:   1,
+		ID:       ciID,
+		Hash:     h.Sum(nil),
+		Command:  cmd,
+		HitCount: 1,
 	}
-	_ = ci
 	fID := bson.NewObjectId()
 	f := &Flow{
-		ID: fID,
-		//		Items: []bson.ObjectId{ciID},
+		ID:       fID,
+		Items:    []bson.ObjectId{ciID},
+		ItemsPtr: []*NewCommandItem{ci},
 	}
-	_ = f
 	return &History{
 		UID:         uid,
 		Date:        time.Now(),
 		Description: desc,
 		Flow:        fID,
+		FlowPtr:     f,
 	}
 
 }
