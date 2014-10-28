@@ -14,3 +14,9 @@ func TestTrans(t *testing.T) {
 	AssertEqual(t, c1.UID, history.UID)
 	fmt.Printf("%#v, %#v\n", c1.Date, history.Date)
 }
+
+func TestHistoryCommand(t *testing.T) {
+	c1 := CreateCommandItem(1, "ls -la")
+	history := TranslateCommand1to2(c1)
+	fmt.Printf("cmd:%s\n", history.Command())
+}

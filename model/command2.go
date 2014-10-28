@@ -15,6 +15,21 @@ type History struct {
 	FlowPtr     *Flow
 }
 
+func (h *History) Command() string {
+	length := len(h.FlowPtr.ItemsPtr)
+	if length == 1 {
+		return h.FlowPtr.ItemsPtr[0].Command
+	} else if length > 1 {
+		buf := ""
+		for _, item := range h.FlowPtr.ItemsPtr {
+			buf += item.Command + "==>"
+		}
+		return buf
+	} else {
+		panic("Null")
+	}
+}
+
 type Flow struct {
 	ID       bson.ObjectId
 	Items    []bson.ObjectId
