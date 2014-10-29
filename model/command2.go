@@ -54,6 +54,16 @@ type NewCommandItem struct {
 	HitCount int
 }
 
+func CreateHistoryFromFlow(uid int, date time.Time, desc string, f *Flow) *History {
+	return &History{
+		UID:         uid,
+		Date:        date,
+		Description: desc,
+		Flow:        f.ID,
+		FlowPtr:     f,
+	}
+}
+
 func CreateHistory(uid int, cmds []string) *History {
 	histLen := len(cmds)
 	if histLen == 0 {
@@ -66,7 +76,7 @@ func CreateHistory(uid int, cmds []string) *History {
 	return nil
 }
 
-func CreateNewCommandItem(uid int, cmd string) (id bson.ObjectId, item *NewCommandItem) {
+func CreateNewCommandItem(cmd string) (id bson.ObjectId, item *NewCommandItem) {
 	// make sure uid, cmd is not nil
 	h := sha1.New()
 	if cmd == "" {
@@ -103,7 +113,7 @@ func CreateFlow(cis []*NewCommandItem) (fID bson.ObjectId, f *Flow) {
 }
 
 func CreateNewHistory(uid int, cmd string, date time.Time, desc string) *History {
-	ciID, ci := CreateNewCommandItem(uid, cmd)
+	ciID, ci := CreateNewCommandItem(cmd)
 	fID := bson.NewObjectId()
 	f := &Flow{
 		ID:       fID,
