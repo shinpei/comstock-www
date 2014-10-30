@@ -12,13 +12,6 @@ import (
 	"time"
 )
 
-const (
-	AUTH_COLLECTION    string = "authinfo"
-	USER_COLLECTION    string = "user"
-	SESSION_COLLECTON  string = "session"
-	COMMAND_COLLECTION string = "commands"
-)
-
 func GetUserSession(db *mgo.Database, token string) (session *model.Session, err error) {
 
 	c := db.C(SESSION_COLLECTON)
