@@ -1,19 +1,15 @@
 package main
 
 import (
-	"crypto/sha1"
-	//	"encoding/base64"
-	"fmt"
 	"github.com/shinpei/comstock-www/model"
 	cmodel "github.com/shinpei/comstock/model"
-	"io"
 	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
 	"net/http"
 	"net/url"
 )
 
-func TranslateHandler(w http.ResponseWriter, req *http.Request) {
+func RanslateHandler(w http.ResponseWriter, req *http.Request) {
 	session, db := getSessionAndDB()
 	defer session.Close()
 	param, _ := url.ParseQuery(req.URL.RawQuery)
@@ -40,14 +36,10 @@ func translateCommand(db *mgo.Database, token string) (err error) {
 	c := db.C(COMMAND_COLLECTION)
 	iter := c.Find(bson.M{"uid": user.UID}).Limit(100).Iter()
 	defer iter.Close()
-	ci := model.CommandItem{}
-	counter := 0
+	ci := model.OldCommandItem{}
 	for iter.Next(&ci) {
-		h := sha1.New()
-		io.WriteString(h, ci.Data.Command)
-		ci.Hash = h.Sum(nil)
-		fmt.Printf("%s %x\n", ci.Data.Command, ci.Hash)
-		counter++
+		hist := model.TranslateCommand1to2(&ci)
+		println(hist.Command())
 
 	}
 

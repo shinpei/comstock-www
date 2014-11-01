@@ -51,7 +51,7 @@ func postCommand(db *mgo.Database, token string, cmd *cmodel.Command) (err error
 	command := model.CreateCommandItem(user.UID, cmd.Cmd)
 
 	// check if there're hash commit
-	ci := model.CommandItem{}
+	ci := model.OldCommandItem{}
 	err = c.Find(bson.M{"hash": command.Hash}).One(&ci)
 	if err != nil {
 		// Not Found also comes here

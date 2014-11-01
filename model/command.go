@@ -9,27 +9,27 @@ import (
 	"time"
 )
 
-type CommandItem struct {
+type OldCommandItem struct {
 	ID   bson.ObjectId `json:"id" bson:"_id"`
 	UID  int
 	Date string `json:"date" bson:"date"` // TODO: fix it with time.Time
 	Hash []byte
-	Data CommandData // TODO: fix name
+	Data OldCommandData // TODO: fix name
 }
 
-type CommandData struct {
+type OldCommandData struct {
 	Command string // need to
 	Desc    string
 }
 
-func CreateCommandItemFromCommand(uid int, cmd *cmodel.Command) *CommandItem {
+func CreateCommandItemFromCommand(uid int, cmd *cmodel.Command) *OldCommandItem {
 	h := sha1.New()
 	io.WriteString(h, cmd.Cmd)
-	return &CommandItem{ID: bson.NewObjectId(), UID: uid, Hash: h.Sum(nil), Date: strconv.FormatInt(time.Now().Unix()*1000, 10), Data: CommandData{Command: cmd.Cmd, Desc: ""}}
+	return &OldCommandItem{ID: bson.NewObjectId(), UID: uid, Hash: h.Sum(nil), Date: strconv.FormatInt(time.Now().Unix()*1000, 10), Data: OldCommandData{Command: cmd.Cmd, Desc: ""}}
 }
 
-func CreateCommandItem(uid int, cmd string) *CommandItem {
+func CreateCommandItem(uid int, cmd string) *OldCommandItem {
 	h := sha1.New()
 	io.WriteString(h, cmd)
-	return &CommandItem{ID: bson.NewObjectId(), UID: uid, Hash: h.Sum(nil), Date: strconv.FormatInt(time.Now().Unix()*1000, 10), Data: CommandData{Command: cmd, Desc: ""}}
+	return &OldCommandItem{ID: bson.NewObjectId(), UID: uid, Hash: h.Sum(nil), Date: strconv.FormatInt(time.Now().Unix()*1000, 10), Data: OldCommandData{Command: cmd, Desc: ""}}
 }

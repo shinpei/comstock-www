@@ -46,7 +46,7 @@ func ListCommands(db *mgo.Database, token string) (cmds []cmodel.Command, err er
 	}
 
 	c := db.C(COMMAND_COLLECTION)
-	cmd := model.CommandItem{}
+	cmd := model.OldCommandItem{}
 	iter := c.Find(bson.M{"uid": user.UID}).Limit(100).Iter()
 	defer iter.Close()
 	for iter.Next(&cmd) {

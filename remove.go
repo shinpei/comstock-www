@@ -55,7 +55,7 @@ func removeOne(db *mgo.Database, token string, num int) (err error) {
 	iter := c.Find(bson.M{"uid": user.UID}).Limit(100).Iter()
 	defer iter.Close()
 	counter := 0
-	ci := model.CommandItem{}
+	ci := model.OldCommandItem{}
 	for iter.Next(&ci) {
 		counter++
 		if counter == num {

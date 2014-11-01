@@ -56,3 +56,12 @@ func InsertCommandItem(db *mgo.Database, cmd *model.NewCommandItem) {
 		log.Printf("Cannot save command, %#v, %#v\n", cmd, err)
 	}
 }
+
+// query : number, query
+/*
+func FindOneCommandItem(db *mgo.Database, query interface{}) (cmd *model.NewCommandItem, err error) {
+	c := db.C(COMMAND_COLLECTION)
+
+	return
+}
+*/

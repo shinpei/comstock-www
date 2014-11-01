@@ -26,7 +26,7 @@ func TransHandler(w http.ResponseWriter, req *http.Request) {
 	c := db.C(COMMAND_COLLECTION)
 	iter := c.Find(bson.M{"uid": user.UID}).Limit(100).Iter()
 	defer iter.Close()
-	ci := model.CommandItem{}
+	ci := model.OldCommandItem{}
 	for iter.Next(&ci) {
 		log.Println("data==>", ci.Data.Command)
 		hist := model.TranslateCommand1to2(&ci)

@@ -56,7 +56,7 @@ func fetchCommandFromNumber(db *mgo.Database, token string, num int) (cmds []cmo
 	c := db.C(COMMAND_COLLECTION)
 	iter := c.Find(bson.M{"uid": user.UID}).Limit(100).Iter()
 	defer iter.Close()
-	ci := model.CommandItem{}
+	ci := model.OldCommandItem{}
 	counter := 0
 	for iter.Next(&ci) {
 		counter++

@@ -8,14 +8,7 @@ import (
 )
 
 // suppose Single item will come
-func TranslateCommand1to2(item *CommandItem) *History {
-	//	h := sha1.New()
-	//	var hash []byte
-	/*	if item.Hash == nil {
-			io.WriteString(h, item.Data.Command)
-			hash = h.Sum(nil)
-		}
-	*/
+func TranslateCommand1to2(item *OldCommandItem) *History {
 	// parse to int64
 	timeVal, err := strconv.ParseInt(item.Date, 10, 64)
 	date := time.Unix(0, timeVal*1000000)
