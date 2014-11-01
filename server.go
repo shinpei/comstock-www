@@ -20,7 +20,6 @@ func NewServer(config Config) *Server {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/loginAs", LoginAsHandler)
-	//	mux.HandleFunc("/translate", TranslateHandler)
 	mux.HandleFunc("/checkSession", CheckSessionHandler)
 	mux.HandleFunc("/list", ListHandler)
 	mux.HandleFunc("/registerUser", RegistUserHandler)
