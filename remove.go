@@ -4,7 +4,6 @@ import (
 	"github.com/shinpei/comstock-www/model"
 	cmodel "github.com/shinpei/comstock/model"
 	"labix.org/v2/mgo"
-	"labix.org/v2/mgo/bson"
 	"log"
 	"net/http"
 	"net/url"
@@ -52,7 +51,7 @@ func removeOne(db *mgo.Database, token string, num int) (err error) {
 		return
 	}
 	c := db.C(COMMAND_COLLECTION)
-	iter := c.Find(bson.M{"uid": user.UID}).Limit(100).Iter()
+	iter := c.Find(M{"uid": user.UID}).Limit(100).Iter()
 	defer iter.Close()
 	counter := 0
 	ci := model.OldCommandItem{}

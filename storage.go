@@ -42,7 +42,7 @@ func getSessionAndDB() (*mgo.Session, *mgo.Database) {
 func InsertCommandItem(db *mgo.Database, cmd *model.NewCommandItem) (err error) {
 	c := db.C(COMMAND_COLLECTION)
 	ci := model.NewCommandItem{}
-	err = c.Find(bson.M{"hash": cmd.Hash}).One(&ci)
+	err = c.Find(M{"hash": cmd.Hash}).One(&ci)
 	if err == nil {
 		if cmd.Command == ci.Command {
 			log.Printf("Duplicated!!%s\n", cmd.Command)
@@ -74,6 +74,7 @@ func encodeHistory(h *model.History) *history {
 }
 
 func decodeHistory(h *history) *model.History {
+
 	return nil
 }
 
@@ -113,6 +114,7 @@ func encodeFlow(mf *model.Flow) *flow {
 	}
 }
 func decodeFlow(f *flow) *model.Flow {
+
 	return nil
 }
 

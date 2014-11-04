@@ -16,7 +16,7 @@ func GetUserSession(db *mgo.Database, token string) (session *model.Session, err
 
 	c := db.C(SESSION_COLLECTON)
 	session = &model.Session{}
-	err = c.Find(bson.M{"token": token}).One(&session)
+	err = c.Find(M{"token": token}).One(&session)
 	if err != nil {
 		// session not found. reject.
 		log.Println("session not found")
@@ -107,7 +107,7 @@ func loginAs(db *mgo.Database, l *model.LoginRequest) (s *model.Session, err err
 				return
 			}
 
-			errAuth = c.Update(bson.M{"uid": user.UID}, newSession)
+			errAuth = c.Update(M{"uid": user.UID}, newSession)
 			if errAuth != nil {
 				s = nil
 				log.Println("Update failed, ", errAuth.Error())
@@ -127,7 +127,7 @@ func loginAs(db *mgo.Database, l *model.LoginRequest) (s *model.Session, err err
 func authenticateUser(db *mgo.Database, uid int, l *model.LoginRequest, updateForExistingID *bson.ObjectId) (s *model.Session, err error) {
 	c := db.C(AUTH_COLLECTION)
 	auth := model.Auth{}
-	err = c.Find(bson.M{"uid": uid}).One(&auth)
+	err = c.Find(M{"uid": uid}).One(&auth)
 	if err != nil {
 		// error occured.
 		log.Println("User seems not registered:", err.Error())

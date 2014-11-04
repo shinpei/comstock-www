@@ -5,7 +5,6 @@ import (
 	"github.com/shinpei/comstock-www/model"
 	cmodel "github.com/shinpei/comstock/model"
 	"labix.org/v2/mgo"
-	"labix.org/v2/mgo/bson"
 	"log"
 	"net/http"
 	"net/url"
@@ -40,14 +39,14 @@ func RegistUserHandler(w http.ResponseWriter, req *http.Request) {
 func RegisterUser(db *mgo.Database, mail string, password string) (err error) {
 	c := db.C(USER_COLLECTION)
 	user := model.User{}
-	err = c.Find(bson.M{"mail": mail}).One(&user)
+	err = c.Find(M{"mail": mail}).One(&user)
 	if err == nil {
 		// existing user.
 		log.Println("Register request issued, but user ", mail, "already exist")
 		err = &cmodel.UserAlreadyExistError{}
 		return
 	}
-	count, err := c.Find(bson.M{}).Count()
+	count, err := c.Find(M{}).Count()
 	// TODO: validate mail, password
 	uid := count + 1 // TODO: also, validate uid
 	newUser := model.CreateUserForNewCommer(mail, uid)

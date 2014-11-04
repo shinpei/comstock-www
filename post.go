@@ -6,7 +6,6 @@ import (
 	"github.com/shinpei/comstock-www/model"
 	cmodel "github.com/shinpei/comstock/model"
 	"labix.org/v2/mgo"
-	"labix.org/v2/mgo/bson"
 	"log"
 	"net/http"
 	"net/url"
@@ -52,7 +51,7 @@ func postCommand(db *mgo.Database, token string, cmd *cmodel.Command) (err error
 
 	// check if there're hash commit
 	ci := model.OldCommandItem{}
-	err = c.Find(bson.M{"hash": command.Hash}).One(&ci)
+	err = c.Find(M{"hash": command.Hash}).One(&ci)
 	if err != nil {
 		// Not Found also comes here
 		log.Printf("Hash: %x\n", command.Hash)

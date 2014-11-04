@@ -5,7 +5,6 @@ import (
 	"github.com/shinpei/comstock-www/model"
 	cmodel "github.com/shinpei/comstock/model"
 	"labix.org/v2/mgo"
-	"labix.org/v2/mgo/bson"
 	"log"
 	"net/http"
 	"net/url"
@@ -47,7 +46,7 @@ func ListCommands(db *mgo.Database, token string) (cmds []cmodel.Command, err er
 
 	c := db.C(COMMAND_COLLECTION)
 	cmd := model.OldCommandItem{}
-	iter := c.Find(bson.M{"uid": user.UID}).Limit(100).Iter()
+	iter := c.Find(M{"uid": user.UID}).Limit(100).Iter()
 	defer iter.Close()
 	for iter.Next(&cmd) {
 		cmds = append(cmds, cmodel.Command{Cmd: cmd.Data.Command, Timestamp: cmd.Date})
