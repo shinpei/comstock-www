@@ -3,11 +3,11 @@ package main
 
 import (
 	"github.com/shinpei/comstock-www/model"
-	"labix.org/v2/mgo/bson"
-	"log"
 	"net/http"
 	"net/url"
 )
+
+type M map[string]interface{}
 
 func TransHandler(w http.ResponseWriter, req *http.Request) {
 
@@ -23,14 +23,13 @@ func TransHandler(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-	c := db.C(COMMAND_COLLECTION)
-	iter := c.Find(bson.M{"uid": user.UID}).Limit(100).Iter()
+	c := NewCommandStorage(db)
+	iter := c.FindFor(M{"uid": user.UID}, 100)
 	defer iter.Close()
 	ci := model.OldCommandItem{}
 	for iter.Next(&ci) {
-		log.Println("data==>", ci.Data.Command)
 		hist := model.TranslateCommand1to2(&ci)
-		log.Println("hist==>", hist.FlowPtr.ItemsPtr[0].Command)
+		InsertHistory(db, hist)
 	}
 	return
 }
