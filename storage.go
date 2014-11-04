@@ -75,7 +75,8 @@ func encodeHistory(h *model.History) *history {
 }
 
 func decodeHistory(h *history) *model.History {
-
+	// decoding require additional read from database, for
+	// reconstructing flow, command items data structure
 	return nil
 }
 
@@ -134,6 +135,23 @@ func insertFlow(db *mgo.Database, mf *model.Flow) (err error) {
 	err = c.Insert(f)
 	if err != nil {
 		log.Println("Cannot save flow", err.Error())
+	}
+	return
+}
+
+func findHistory(db *mgo.Database, token string, num int) (hist *model.History, err error) {
+	user, err := GetUserSession(db, token)
+	c := db.C(HISTORY_COLLECTION)
+	iter := c.Find(M{"uid": user.UID}).Limit(100).Iter()
+	defer iter.Close()
+	h := history{}
+	counter := 0
+	for iter.Next(&h) {
+		counter++
+		if counter == num {
+			hist = decodeHistory(&h)
+			break
+		}
 	}
 	return
 }

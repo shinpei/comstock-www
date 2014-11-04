@@ -43,7 +43,7 @@ func postCommand(db *mgo.Database, token string, cmd *cmodel.Command) (err error
 	return
 }
 
-func postNewHistory(db *mgo.Database, token string, cmd string, date time.Time, desc string) (err error) {
+func postHistory(db *mgo.Database, token string, cmd string, date time.Time, desc string) (err error) {
 
 	user, err := GetUserSession(db, token)
 	if err != nil {

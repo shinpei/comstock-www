@@ -45,27 +45,11 @@ func FetchHandler(w http.ResponseWriter, req *http.Request) {
 	w.Write(resJson)
 
 }
-
 func fetchCommandFromNumber(db *mgo.Database, token string, num int) (cmds []cmodel.Command, err error) {
-	user, err := GetUserSession(db, token)
-	if err != nil {
-		return
-	}
-	// TODO: check session expiration
-	c := db.C(COMMAND_COLLECTION)
-	iter := c.Find(M{"uid": user.UID}).Limit(100).Iter()
-	defer iter.Close()
-	ci := model.OldCommandItem{}
-	counter := 0
-	for iter.Next(&ci) {
-		counter++
-		if counter == num {
-			cmds = append(cmds, cmodel.Command{Cmd: ci.Data.Command, Timestamp: ci.Date})
-			log.Println("Found! ", ci.Data.Command)
-		}
-	}
-	if counter < num {
-		err = &cmodel.CommandNotFoundError{}
-	}
+	return
+}
+
+func fetchHistoryFromNumber(db *mgo.Database, token string, num int) (hist *model.History, err error) {
+	hist, err = findHistory(db, token, num)
 	return
 }
