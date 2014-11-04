@@ -57,6 +57,37 @@ func InsertCommandItem(db *mgo.Database, cmd *model.NewCommandItem) {
 	}
 }
 
+type history struct {
+	UID         int
+	Date        time.Time
+	Description string
+	Flow        bson.ObjectId
+}
+
+func encodeHistory(h *model.History) *history {
+	return &history{
+		UID:         h.UID,
+		Date:        h.Date,
+		Description: h.Description,
+		Flow:        h.Flow,
+	}
+}
+
+func decodeHistory(h *history) *model.History {
+	return nil
+}
+
+func InsertHistory(db *mgo.Database, hist *model.History) (err error) {
+	c := db.C(HISTORY_COLLECTION)
+	h := encodeHistory(hist)
+	err = c.Insert(h)
+	// remove FlowPtr
+	if err != nil {
+		log.Println("Cannot save history", err.Error())
+	}
+	return
+}
+
 // query : number, query
 /*
 func FindOneCommandItem(db *mgo.Database, query interface{}) (cmd *model.NewCommandItem, err error) {
