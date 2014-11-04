@@ -39,10 +39,10 @@ func getSessionAndDB() (*mgo.Session, *mgo.Database) {
 	return session, session.DB(dbname)
 }
 
-func InsertCommandItem(db *mgo.Database, cmd *model.NewCommandItem) {
+func InsertCommandItem(db *mgo.Database, cmd *model.NewCommandItem) (err error) {
 	c := db.C(COMMAND_COLLECTION)
 	ci := model.NewCommandItem{}
-	err := c.Find(bson.M{"hash": cmd.Hash}).One(&ci)
+	err = c.Find(bson.M{"hash": cmd.Hash}).One(&ci)
 	if err == nil {
 		log.Printf("Duplicated? %s\n", cmd.Command)
 		if cmd.Command == ci.Command {
@@ -55,6 +55,7 @@ func InsertCommandItem(db *mgo.Database, cmd *model.NewCommandItem) {
 	if err != nil {
 		log.Printf("Cannot save command, %#v, %#v\n", cmd, err)
 	}
+	return
 }
 
 type history struct {
@@ -79,20 +80,50 @@ func decodeHistory(h *history) *model.History {
 
 func InsertHistory(db *mgo.Database, hist *model.History) (err error) {
 	c := db.C(HISTORY_COLLECTION)
+	err = insertFlow(db, hist.FlowPtr)
+	if err != nil {
+		return
+	}
+	// remove FlowPtr
 	h := encodeHistory(hist)
 	err = c.Insert(h)
-	// remove FlowPtr
 	if err != nil {
 		log.Println("Cannot save history", err.Error())
 	}
-	return
-}
-
-// query : number, query
-/*
-func FindOneCommandItem(db *mgo.Database, query interface{}) (cmd *model.NewCommandItem, err error) {
-	c := db.C(COMMAND_COLLECTION)
 
 	return
 }
-*/
+
+type flow struct {
+	ID    bson.ObjectId
+	Items []bson.ObjectId
+}
+
+func encodeFlow(mf *model.Flow) *flow {
+	return &flow{
+		ID:    mf.ID,
+		Items: mf.Items,
+	}
+}
+func decodeFlow(f *flow) *model.Flow {
+	return nil
+}
+
+func insertFlow(db *mgo.Database, flow *model.Flow) (err error) {
+	c := db.C(FLOW_COLLECTION)
+	// insert command Item first,
+
+	for idx, ci := range flow.ItemsPtr {
+		_ = idx
+		err = InsertCommandItem(db, ci)
+		if err != nil {
+			return
+		}
+	}
+	f := encodeFlow(flow)
+	err = c.Insert(f)
+	if err != nil {
+		log.Println("Cannot save flow", err.Error())
+	}
+	return
+}
