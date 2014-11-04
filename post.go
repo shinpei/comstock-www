@@ -2,13 +2,13 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/shinpei/comstock-www/model"
 	cmodel "github.com/shinpei/comstock/model"
 	"labix.org/v2/mgo"
 	"log"
 	"net/http"
 	"net/url"
+	"time"
 )
 
 func PostCommandHandler(w http.ResponseWriter, req *http.Request) {
@@ -26,7 +26,7 @@ func PostCommandHandler(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("cmd=>%#v\n", ccmd)
+	D("cmd=>%#v\n", ccmd)
 	// actual save to the mongo
 	err = postCommand(db, m["authinfo"][0], &ccmd)
 	if _, ok := err.(*cmodel.SessionExpiresError); ok {
@@ -40,29 +40,19 @@ func PostCommandHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func postCommand(db *mgo.Database, token string, cmd *cmodel.Command) (err error) {
+	return
+}
+
+func postNewHistory(db *mgo.Database, token string, cmd string, date time.Time, desc string) (err error) {
 
 	user, err := GetUserSession(db, token)
 	if err != nil {
 		return
 	}
-	//TODO: check session expiration
-	c := db.C(COMMAND_COLLECTION)
-	command := model.CreateCommandItem(user.UID, cmd.Cmd)
 
-	// check if there're hash commit
-	ci := model.OldCommandItem{}
-	err = c.Find(M{"hash": command.Hash}).One(&ci)
-	if err != nil {
-		// Not Found also comes here
-		log.Printf("Hash: %x\n", command.Hash)
-	} else {
-		log.Printf("Duplication? #%v\n", ci)
-		if command.Data.Command == cmd.Cmd {
-			log.Printf("Duplicated: %s\n", cmd)
-			return
-		}
-	}
-	err = c.Insert(command)
+	hist := model.CreateHistory(user.UID, cmd, date, desc)
+
+	err = InsertHistory(db, hist)
 	if err != nil {
 		log.Println("Cannot save command", err.Error())
 	}
@@ -73,6 +63,7 @@ func postCommand(db *mgo.Database, token string, cmd *cmodel.Command) (err error
 * the data should be []CommnadData
  */
 
+/*
 func PostChunkCommandsHandler(w http.ResponseWriter, req *http.Request) {
 
 	session, db := getSessionAndDB()
@@ -91,8 +82,4 @@ func PostChunkCommandsHandler(w http.ResponseWriter, req *http.Request) {
 	}
 	w.Write([]byte("Success"))
 }
-
-func postChunkCommands(db *mgo.Database, token string, cmd string) (err error) {
-
-	return
-}
+*/

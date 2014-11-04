@@ -45,8 +45,9 @@ func InsertCommandItem(db *mgo.Database, cmd *model.NewCommandItem) (err error) 
 	err = c.Find(M{"hash": cmd.Hash}).One(&ci)
 	if err == nil {
 		if cmd.Command == ci.Command {
-			log.Printf("Duplicated!!%s\n", cmd.Command)
+			log.Printf("Duplicated! '%s'\n", cmd.Command)
 			// TODO: need to count up?
+
 			return
 		}
 	}

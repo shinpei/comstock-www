@@ -26,7 +26,7 @@ func NewServer(config Config) *Server {
 	mux.HandleFunc("/postCommand", PostCommandHandler)
 	mux.HandleFunc("/fetchCommandFromNumber", FetchHandler)
 	mux.HandleFunc("/removeOne", RemoveOneHandler)
-	mux.HandleFunc("/postChunkCommands", PostChunkCommandsHandler)
+	//	mux.HandleFunc("/postChunkCommands", PostChunkCommandsHandler)
 	mux.HandleFunc("/trans", TransHandler)
 	mux.HandleFunc("/js/angular.min.js.map", func(w http.ResponseWriter, req *http.Request) {
 		return

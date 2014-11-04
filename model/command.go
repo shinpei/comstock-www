@@ -64,18 +64,6 @@ func CreateHistoryFromFlow(uid int, date time.Time, desc string, f *Flow) *Histo
 	}
 }
 
-func CreateHistory(uid int, cmds []string) *History {
-	histLen := len(cmds)
-	if histLen == 0 {
-		return nil
-	} else {
-		for _, cmd := range cmds {
-			println(cmd)
-		}
-	}
-	return nil
-}
-
 func CreateNewCommandItem(cmd string) (id bson.ObjectId, item *NewCommandItem) {
 	// make sure uid, cmd is not nil
 	h := sha1.New()
@@ -112,7 +100,7 @@ func CreateFlow(cis []*NewCommandItem) (fID bson.ObjectId, f *Flow) {
 	return
 }
 
-func CreateNewHistory(uid int, cmd string, date time.Time, desc string) *History {
+func CreateHistory(uid int, cmd string, date time.Time, desc string) *History {
 	ciID, ci := CreateNewCommandItem(cmd)
 	fID := bson.NewObjectId()
 	f := &Flow{

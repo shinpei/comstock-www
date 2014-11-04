@@ -1,8 +1,6 @@
 package model
 
 import (
-	//	"crypto/sha1"
-	//	"io"
 	"strconv"
 	"time"
 )
@@ -17,5 +15,5 @@ func TranslateCommand1to2(item *OldCommandItem) *History {
 		panic(err)
 	}
 	// create CommandDataStructure
-	return CreateNewHistory(item.UID, item.Data.Command, date, item.Data.Desc)
+	return CreateHistory(item.UID, item.Data.Command, date, item.Data.Desc)
 }
