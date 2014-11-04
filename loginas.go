@@ -93,7 +93,7 @@ func loginAs(db *mgo.Database, l *model.LoginRequest) (s *model.Session, err err
 		}
 
 	} else {
-		log.Println("Session fonud, for user ", l.Mail())
+
 		// check weather it expires or not
 		exp := time.Unix(s.Expires, 0)
 		now := time.Now()
@@ -114,11 +114,11 @@ func loginAs(db *mgo.Database, l *model.LoginRequest) (s *model.Session, err err
 				err = &cmodel.ServerSystemError{}
 				return
 			}
-			log.Println("Session found, and expired, but updated")
+			D("Updated session for expired one")
 			s = newSession
-		} else {
-			log.Println("Session found, and it's still avlie")
+			return
 		}
+		D("Session found, and it's still avlie")
 		err = &cmodel.AlreadyLoginError{}
 	}
 	return
