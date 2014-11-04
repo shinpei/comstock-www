@@ -66,8 +66,8 @@ func LoginAsHandler(w http.ResponseWriter, req *http.Request) {
 func loginAs(db *mgo.Database, l *model.LoginRequest) (s *model.Session, err error) {
 	c := db.C(USER_COLLECTION)
 	user := model.User{}
-	log.Println("l.Mail:", l.Mail())
-	err = c.Find(bson.M{"mail": l.Mail()}).One(&user)
+	D("Logging in with Mail:", l.Mail())
+	err = c.Find(M{"mail": l.Mail()}).One(&user)
 	if err != nil {
 		log.Println("Counln't find user, ", l.Mail())
 		err = &cmodel.UserNotFoundError{}
@@ -76,7 +76,7 @@ func loginAs(db *mgo.Database, l *model.LoginRequest) (s *model.Session, err err
 
 	c = db.C(SESSION_COLLECTON)
 	s = new(model.Session)
-	err = c.Find(bson.M{"uid": user.UID}).One(&s)
+	err = c.Find(M{"uid": user.UID}).One(&s)
 	if err != nil {
 		// session not found. authenticate
 		log.Println("Error occured. check it: ", err.Error())
