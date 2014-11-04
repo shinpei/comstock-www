@@ -44,9 +44,8 @@ func InsertCommandItem(db *mgo.Database, cmd *model.NewCommandItem) (err error) 
 	ci := model.NewCommandItem{}
 	err = c.Find(bson.M{"hash": cmd.Hash}).One(&ci)
 	if err == nil {
-		log.Printf("Duplicated? %s\n", cmd.Command)
 		if cmd.Command == ci.Command {
-			log.Println("Duplicated!!", cmd.Command)
+			log.Printf("Duplicated!!%s\n", cmd.Command)
 			// TODO: need to count up?
 			return
 		}
@@ -80,6 +79,14 @@ func decodeHistory(h *history) *model.History {
 
 func InsertHistory(db *mgo.Database, hist *model.History) (err error) {
 	c := db.C(HISTORY_COLLECTION)
+
+	histBuf := &history{}
+	err = c.Find(M{"date": hist.Date}).One(&histBuf)
+	if err == nil {
+		log.Printf("Duplicated timestamp, %#x\n", hist.Date)
+		return
+	}
+
 	err = insertFlow(db, hist.FlowPtr)
 	if err != nil {
 		return
@@ -109,18 +116,18 @@ func decodeFlow(f *flow) *model.Flow {
 	return nil
 }
 
-func insertFlow(db *mgo.Database, flow *model.Flow) (err error) {
+// This is private, we cannot use this from external
+func insertFlow(db *mgo.Database, mf *model.Flow) (err error) {
 	c := db.C(FLOW_COLLECTION)
-	// insert command Item first,
 
-	for idx, ci := range flow.ItemsPtr {
+	for idx, ci := range mf.ItemsPtr {
 		_ = idx
 		err = InsertCommandItem(db, ci)
 		if err != nil {
 			return
 		}
 	}
-	f := encodeFlow(flow)
+	f := encodeFlow(mf)
 	err = c.Insert(f)
 	if err != nil {
 		log.Println("Cannot save flow", err.Error())
