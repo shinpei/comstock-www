@@ -16,17 +16,17 @@ type History struct {
 }
 
 func (h *History) Command() string {
-	length := len(h.FlowPtr.ItemsPtr)
-	if length == 1 {
+	l := len(h.FlowPtr.ItemsPtr)
+	if l == 1 {
 		return h.FlowPtr.ItemsPtr[0].Command
-	} else if length > 1 {
+	} else if l > 1 {
 		buf := ""
 		for _, item := range h.FlowPtr.ItemsPtr {
 			buf += item.Command + " => "
 		}
 		return buf[:len(buf)-4]
 	} else {
-		panic("Null")
+		panic("Received size=0 history as receiver")
 	}
 }
 

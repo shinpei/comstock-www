@@ -32,7 +32,13 @@ func TestFetchHistory(t *testing.T) {
 		println(err.Error())
 		panic("cannot login test db")
 	}
-	accessToken := s.Token
-	_ = accessToken
+	tk := s.Token
+	_ = tk
+	hist, err := FindHistoryFromNum(db, tk, 1)
+	if err != nil || hist == nil {
+		println(err.Error())
+		t.Fail()
+	}
+	println(hist.Command())
 
 }
