@@ -29,6 +29,7 @@ func PostCommandHandler(w http.ResponseWriter, req *http.Request) {
 	D("cmd=>%#v\n", ccmd)
 	// actual save to the mongo
 	err = postCommand(db, m["authinfo"][0], &ccmd)
+	//	err = postHistory(db, m["authinfo"][0],
 	if _, ok := err.(*cmodel.SessionExpiresError); ok {
 		http.Error(w, err.Error(), http.StatusForbidden)
 		return
@@ -43,13 +44,8 @@ func postCommand(db *mgo.Database, token string, cmd *cmodel.Command) (err error
 	return
 }
 
-func postHistory(db *mgo.Database, token string, cmd string, date time.Time, desc string) (err error) {
-
-	user, err := GetUserSession(db, token)
-	if err != nil {
-		return
-	}
-
+func postHistory(db *mgo.Database, tk string, cmd string, date time.Time, desc string) (err error) {
+	user, err := GetUserSession(db, tk)
 	hist := model.CreateHistory(user.UID, cmd, date, desc)
 
 	err = InsertHistory(db, hist)

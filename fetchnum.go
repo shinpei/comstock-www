@@ -51,6 +51,9 @@ func fetchCommandFromNumber(db *mgo.Database, tk string, num int) (cmds []cmodel
 }
 
 func fetchHistoryFromNumber(db *mgo.Database, token string, num int) (hist *model.History, err error) {
-	//	hist, err = findHistory(db, token, num)
+	hist, err = FindHistoryFromNum(db, token, num)
+	if err != nil {
+		log.Println("Cannot find history", err.Error())
+	}
 	return
 }
