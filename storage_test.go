@@ -24,6 +24,7 @@ func TestPostHistory(t *testing.T) {
 	}
 }
 
+/*
 func TestPostHistories(t *testing.T) {
 	ses, db := getSessionAndDB()
 	defer ses.Close()
@@ -45,6 +46,7 @@ func TestPostHistories(t *testing.T) {
 	}
 
 }
+*/
 
 func TestFetchHistory(t *testing.T) {
 	ses, db := getSessionAndDB()
@@ -55,7 +57,7 @@ func TestFetchHistory(t *testing.T) {
 		panic("cannot login test db")
 	}
 	tk := s.Token
-	hist, err := FindHistoryFromNum(db, tk, 2)
+	hist, err := FindHistoryFromNum(db, tk, 1)
 	if err != nil || hist == nil {
 		println(err.Error())
 		t.Fail()
