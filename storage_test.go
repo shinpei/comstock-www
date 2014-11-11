@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/shinpei/comstock-www/model"
+	. "github.com/shinpei/comstock/test"
 	"testing"
 	"time"
 )
@@ -24,7 +25,6 @@ func TestPostHistory(t *testing.T) {
 	}
 }
 
-/*
 func TestPostHistories(t *testing.T) {
 	ses, db := getSessionAndDB()
 	defer ses.Close()
@@ -46,7 +46,6 @@ func TestPostHistories(t *testing.T) {
 	}
 
 }
-*/
 
 func TestFetchHistory(t *testing.T) {
 	ses, db := getSessionAndDB()
@@ -57,10 +56,16 @@ func TestFetchHistory(t *testing.T) {
 		panic("cannot login test db")
 	}
 	tk := s.Token
+
 	hist, err := FindHistoryFromNum(db, tk, 1)
 	if err != nil || hist == nil {
-		println(err.Error())
-		t.Fail()
+		t.Fatal(err.Error())
 	}
-	println(hist.Command())
+	AssertEqual(t, "ls -la", hist.Command())
+
+	hist, err = FindHistoryFromNum(db, tk, 2)
+	if err != nil || hist == nil {
+		t.Fatal(err.Error())
+	}
+	AssertEqual(t, "ls -la => wc -l", hist.Command())
 }
