@@ -173,7 +173,6 @@ func FindHistoryFromNum(db *mgo.Database, tk string, num int) (hist *model.Histo
 		counter++
 		if counter == num {
 			// findFlow
-			D("HI")
 			mf, err := findFlow(db, h.Flow)
 			if err != nil {
 				println("Flow is nil")
@@ -197,7 +196,6 @@ func findFlow(db *mgo.Database, fID bson.ObjectId) (mf *model.Flow, err error) {
 
 	c := db.C(FLOW_COLLECTION)
 	f := flow{}
-	D("Finding flow: %v\n", fID)
 	err = c.Find(M{"id": fID}).One(&f)
 	if err != nil {
 		fmt.Println("Not found:", fID)
@@ -205,6 +203,9 @@ func findFlow(db *mgo.Database, fID bson.ObjectId) (mf *model.Flow, err error) {
 	}
 	// find CommandItems
 	cis, err := findCommandItems(db, f.Items)
+	if err != nil {
+		fmt.Println("Command not found: ", f.Items)
+	}
 	mf = decodeFlow(&f, cis)
 	return
 }
