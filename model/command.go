@@ -54,6 +54,7 @@ type NewCommandItem struct {
 	HitCount int
 }
 
+// WARN: Command cannot be created freely.
 func CreateHistoryFromFlow(uid int, date time.Time, desc string, f *Flow) *History {
 	return &History{
 		UID:         uid,
@@ -64,6 +65,7 @@ func CreateHistoryFromFlow(uid int, date time.Time, desc string, f *Flow) *Histo
 	}
 }
 
+// WARN: Command cannot be created freely.
 func CreateNewCommandItem(cmd string) (id bson.ObjectId, item *NewCommandItem) {
 	// make sure uid, cmd is not nil
 	h := sha1.New()

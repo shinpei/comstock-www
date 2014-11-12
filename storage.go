@@ -96,6 +96,7 @@ func getSessionAndDB() (*mgo.Session, *mgo.Database) {
 }
 
 func InsertCommandItem(db *mgo.Database, cmd *model.NewCommandItem) (err error) {
+
 	c := db.C(COMMAND_COLLECTION)
 	ci := model.NewCommandItem{}
 	err = c.Find(M{"hash": cmd.Hash}).One(&ci)
@@ -128,6 +129,7 @@ func InsertHistory(db *mgo.Database, hist *model.History) (err error) {
 	if err != nil {
 		return
 	}
+
 	// remove FlowPtr
 	h := encodeHistory(hist)
 	err = c.Insert(h)
@@ -142,8 +144,7 @@ func InsertHistory(db *mgo.Database, hist *model.History) (err error) {
 func insertFlow(db *mgo.Database, mf *model.Flow) (err error) {
 	c := db.C(FLOW_COLLECTION)
 
-	for idx, ci := range mf.ItemsPtr {
-		_ = idx
+	for _, ci := range mf.ItemsPtr {
 		err = InsertCommandItem(db, ci)
 		if err != nil {
 			return
