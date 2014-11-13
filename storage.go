@@ -32,7 +32,7 @@ type history struct {
 
 type flow struct {
 	ID    bson.ObjectId
-	Items []bson.ObjectId
+	Items []model.CommandId
 }
 
 //================= converters =========================
@@ -211,11 +211,11 @@ func findFlow(db *mgo.Database, fID bson.ObjectId) (mf *model.Flow, err error) {
 	return
 }
 
-func findCommandItems(db *mgo.Database, cIDs []bson.ObjectId) (mcis []*model.NewCommandItem, err error) {
+func findCommandItems(db *mgo.Database, cIDs []model.CommandId) (mcis []*model.NewCommandItem, err error) {
 	c := db.C(COMMAND_COLLECTION)
 	for _, cid := range cIDs {
 		cmd := model.NewCommandItem{}
-		err = c.Find(M{"id": cid}).One(&cmd)
+		err = c.Find(M{"hash": cid}).One(&cmd)
 		if err != nil {
 			// cannot find, database corrupy?
 			break

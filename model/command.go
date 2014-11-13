@@ -7,6 +7,8 @@ import (
 	"time"
 )
 
+type CommandId []byte
+
 type History struct {
 	UID         int
 	Date        time.Time
@@ -32,7 +34,7 @@ func (h *History) Command() string {
 
 type Flow struct {
 	ID       bson.ObjectId
-	Items    []bson.ObjectId
+	Items    []CommandId
 	ItemsPtr []*NewCommandItem
 }
 
@@ -48,8 +50,8 @@ func (f *Flow) Command() string {
 }
 
 type NewCommandItem struct {
-	ID       bson.ObjectId
-	Hash     []byte
+	//	ID       bson.ObjectId
+	Hash     CommandId
 	Command  string
 	HitCount int
 }
@@ -66,17 +68,17 @@ func CreateHistoryFromFlow(uid int, date time.Time, desc string, f *Flow) *Histo
 }
 
 // WARN: Command cannot be created freely.
-func CreateNewCommandItem(cmd string) (id bson.ObjectId, item *NewCommandItem) {
+func CreateNewCommandItem(cmd string) (hash CommandId, item *NewCommandItem) {
 	// make sure uid, cmd is not nil
 	h := sha1.New()
 	if cmd == "" {
 		return
 	}
-	id = bson.NewObjectId()
 	io.WriteString(h, cmd)
+	hash = h.Sum(nil)
 	item = &NewCommandItem{
-		ID:       id,
-		Hash:     h.Sum(nil),
+		//		ID:       id,
+		Hash:     hash,
 		Command:  cmd,
 		HitCount: 1,
 	}
@@ -89,9 +91,9 @@ func CreateFlow(cis []*NewCommandItem) (fID bson.ObjectId, f *Flow) {
 		// return with nil
 		return
 	}
-	items := []bson.ObjectId{}
+	items := []CommandId{}
 	for _, ci := range cis {
-		items = append(items, ci.ID)
+		items = append(items, ci.Hash)
 	}
 	fID = bson.NewObjectId()
 	f = &Flow{
@@ -103,11 +105,11 @@ func CreateFlow(cis []*NewCommandItem) (fID bson.ObjectId, f *Flow) {
 }
 
 func CreateHistory(uid int, cmd string, date time.Time, desc string) *History {
-	ciID, ci := CreateNewCommandItem(cmd)
+	hash, ci := CreateNewCommandItem(cmd)
 	fID := bson.NewObjectId()
 	f := &Flow{
 		ID:       fID,
-		Items:    []bson.ObjectId{ciID},
+		Items:    []CommandId{hash},
 		ItemsPtr: []*NewCommandItem{ci},
 	}
 	return &History{

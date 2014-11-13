@@ -49,7 +49,7 @@ func TestPostHistories(t *testing.T) {
 
 }
 
-func _TestFetchHistory(t *testing.T) {
+func TestFetchHistory(t *testing.T) {
 	ses, db := getSessionAndDB()
 	defer ses.Close()
 	s, err := loginAs(db, model.CreateLoginRequest("test@mail.com", "test"))
@@ -61,12 +61,14 @@ func _TestFetchHistory(t *testing.T) {
 
 	hist, err := FindHistoryFromNum(db, tk, 1)
 	if err != nil || hist == nil {
+		println("hi")
 		t.Fatal(err.Error())
 	}
 	AssertEqual(t, "ls -la", hist.Command())
 
 	hist, err = FindHistoryFromNum(db, tk, 2)
 	if err != nil || hist == nil {
+		println("hi2")
 		t.Fatal(err.Error())
 	}
 	AssertEqual(t, "ls -la => wc -l", hist.Command())
