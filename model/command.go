@@ -35,7 +35,7 @@ func (h *History) Command() string {
 type Flow struct {
 	ID       bson.ObjectId
 	Items    []CommandId
-	ItemsPtr []*NewCommandItem
+	ItemsPtr []*CommandItem
 }
 
 func (f *Flow) Command() string {
@@ -49,7 +49,9 @@ func (f *Flow) Command() string {
 	return dummyH.Command()
 }
 
-type NewCommandItem struct {
+// use command hash as ID
+// WARN: optimistic assumption -> command hash won't collide
+type CommandItem struct {
 	//	ID       bson.ObjectId
 	Hash     CommandId
 	Command  string
@@ -68,7 +70,7 @@ func CreateHistoryFromFlow(uid int, date time.Time, desc string, f *Flow) *Histo
 }
 
 // WARN: Command cannot be created freely.
-func CreateNewCommandItem(cmd string) (hash CommandId, item *NewCommandItem) {
+func CreateCommandItem(cmd string) (hash CommandId, item *CommandItem) {
 	// make sure uid, cmd is not nil
 	h := sha1.New()
 	if cmd == "" {
@@ -76,7 +78,7 @@ func CreateNewCommandItem(cmd string) (hash CommandId, item *NewCommandItem) {
 	}
 	io.WriteString(h, cmd)
 	hash = h.Sum(nil)
-	item = &NewCommandItem{
+	item = &CommandItem{
 		//		ID:       id,
 		Hash:     hash,
 		Command:  cmd,
@@ -85,7 +87,7 @@ func CreateNewCommandItem(cmd string) (hash CommandId, item *NewCommandItem) {
 	return
 }
 
-func CreateFlow(cis []*NewCommandItem) (fID bson.ObjectId, f *Flow) {
+func CreateFlow(cis []*CommandItem) (fID bson.ObjectId, f *Flow) {
 	cilen := len(cis)
 	if cilen == 0 {
 		// return with nil
@@ -105,12 +107,12 @@ func CreateFlow(cis []*NewCommandItem) (fID bson.ObjectId, f *Flow) {
 }
 
 func CreateHistory(uid int, cmd string, date time.Time, desc string) *History {
-	hash, ci := CreateNewCommandItem(cmd)
+	hash, ci := CreateCommandItem(cmd)
 	fID := bson.NewObjectId()
 	f := &Flow{
 		ID:       fID,
 		Items:    []CommandId{hash},
-		ItemsPtr: []*NewCommandItem{ci},
+		ItemsPtr: []*CommandItem{ci},
 	}
 	return &History{
 		UID:         uid,

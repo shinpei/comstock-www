@@ -22,13 +22,13 @@ type OldCommandData struct {
 	Desc    string
 }
 
-func CreateCommandItemFromCommand(uid int, cmd *cmodel.Command) *OldCommandItem {
+func CreateOleCommandItemFromCommand(uid int, cmd *cmodel.Command) *OldCommandItem {
 	h := sha1.New()
 	io.WriteString(h, cmd.Cmd)
 	return &OldCommandItem{ID: bson.NewObjectId(), UID: uid, Hash: h.Sum(nil), Date: strconv.FormatInt(time.Now().Unix()*1000, 10), Data: OldCommandData{Command: cmd.Cmd, Desc: ""}}
 }
 
-func CreateCommandItem(uid int, cmd string) *OldCommandItem {
+func CreateOldCommandItem(uid int, cmd string) *OldCommandItem {
 	h := sha1.New()
 	io.WriteString(h, cmd)
 	return &OldCommandItem{ID: bson.NewObjectId(), UID: uid, Hash: h.Sum(nil), Date: strconv.FormatInt(time.Now().Unix()*1000, 10), Data: OldCommandData{Command: cmd, Desc: ""}}

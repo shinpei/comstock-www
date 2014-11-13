@@ -65,7 +65,7 @@ func encodeFlow(mf *model.Flow) *flow {
 	}
 }
 
-func decodeFlow(f *flow, mcis []*model.NewCommandItem) *model.Flow {
+func decodeFlow(f *flow, mcis []*model.CommandItem) *model.Flow {
 
 	return &model.Flow{
 		ID:       f.ID,
@@ -95,10 +95,10 @@ func getSessionAndDB() (*mgo.Session, *mgo.Database) {
 	return session, session.DB(dbname)
 }
 
-func InsertCommandItem(db *mgo.Database, cmd *model.NewCommandItem) (err error) {
+func InsertCommandItem(db *mgo.Database, cmd *model.CommandItem) (err error) {
 
 	c := db.C(COMMAND_COLLECTION)
-	ci := model.NewCommandItem{}
+	ci := model.CommandItem{}
 	err = c.Find(M{"hash": cmd.Hash}).One(&ci)
 	if err == nil {
 		if cmd.Command == ci.Command {
@@ -211,10 +211,10 @@ func findFlow(db *mgo.Database, fID bson.ObjectId) (mf *model.Flow, err error) {
 	return
 }
 
-func findCommandItems(db *mgo.Database, cIDs []model.CommandId) (mcis []*model.NewCommandItem, err error) {
+func findCommandItems(db *mgo.Database, cIDs []model.CommandId) (mcis []*model.CommandItem, err error) {
 	c := db.C(COMMAND_COLLECTION)
 	for _, cid := range cIDs {
-		cmd := model.NewCommandItem{}
+		cmd := model.CommandItem{}
 		err = c.Find(M{"hash": cid}).One(&cmd)
 		if err != nil {
 			// cannot find, database corrupy?

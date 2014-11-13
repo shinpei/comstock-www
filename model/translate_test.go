@@ -7,14 +7,14 @@ import (
 	"time"
 )
 
-func createCommandList() []*NewCommandItem {
-	_, ci1 := CreateNewCommandItem("ls -la")
-	_, ci2 := CreateNewCommandItem("wc -l")
-	return []*NewCommandItem{ci1, ci2}
+func createCommandList() []*CommandItem {
+	_, ci1 := CreateCommandItem("ls -la")
+	_, ci2 := CreateCommandItem("wc -l")
+	return []*CommandItem{ci1, ci2}
 }
 
-func TestCreateNewCommandItem(t *testing.T) {
-	_, ci := CreateNewCommandItem("ls -la")
+func TestCreateCommandItem(t *testing.T) {
+	_, ci := CreateCommandItem("ls -la")
 	AssertEqual(t, "ls -la", ci.Command)
 }
 
@@ -30,14 +30,14 @@ func TestCreateHistoryFromFlow(t *testing.T) {
 }
 
 func TestTrans(t *testing.T) {
-	c1 := CreateCommandItem(1, "ls -la")
+	c1 := CreateOldCommandItem(1, "ls -la")
 	history := TranslateCommand1to2(c1)
 	AssertEqual(t, c1.Data.Command, history.Command())
 	AssertEqual(t, c1.UID, history.UID)
 }
 
 func TestHistoryCommand(t *testing.T) {
-	c1 := CreateCommandItem(1, "ls -la")
+	c1 := CreateOldCommandItem(1, "ls -la")
 	history := TranslateCommand1to2(c1)
 	AssertEqual(t, "ls -la", history.Command())
 }
