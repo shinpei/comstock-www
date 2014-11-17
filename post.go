@@ -16,20 +16,20 @@ func PostCommandHandler(w http.ResponseWriter, req *http.Request) {
 	session, db := getSessionAndDB()
 	defer session.Close()
 	m, _ := url.ParseQuery(req.URL.RawQuery)
-	if m["authinfo"] == nil || m["cmd"] == nil {
+	if m["authinfo"] == nil || m["history"] == nil {
 		http.Error(w, "Invalid post command requst", http.StatusBadRequest)
 	}
 
 	// new from 0.2.0, convert recieved command json data
-	ccmd := cmodel.Command{}
-	err := json.Unmarshal([]byte(m["cmd"][0]), &ccmd)
+	hist := model.History{}
+	err := json.Unmarshal([]byte(m["history"][0]), &hist)
 	if err != nil {
 		panic(err)
 	}
-	D("cmd=>%#v\n", ccmd)
+	D("history=>%#v\n", hist)
 	// actual save to the mongo
-	err = postCommand(db, m["authinfo"][0], &ccmd)
-	//	err = postHistory(db, m["authinfo"][0],
+	err = postCommand(db, m["authinfo"][0], &hist)
+	//	err = postHistory(db, m["authinfo"][0],ccmd)
 	if _, ok := err.(*cmodel.SessionExpiresError); ok {
 		http.Error(w, err.Error(), http.StatusForbidden)
 		return
@@ -40,7 +40,8 @@ func PostCommandHandler(w http.ResponseWriter, req *http.Request) {
 	w.Write([]byte("Success"))
 }
 
-func postCommand(db *mgo.Database, token string, cmd *cmodel.Command) (err error) {
+func postCommand(db *mgo.Database, token string, cmd *model.History) (err error) {
+
 	return
 }
 

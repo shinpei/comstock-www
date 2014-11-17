@@ -23,8 +23,8 @@ func TransHandler(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-	c := NewCommandStorage(db)
-	iter := c.FindFor(M{"uid": user.UID}, 100)
+	c := db.C(COMMAND_COLLECTION)
+	iter := c.Find(M{"uid": user.UID}).Limit(100).Iter()
 	defer iter.Close()
 	ci := model.OldCommandItem{}
 	for iter.Next(&ci) {
