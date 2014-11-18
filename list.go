@@ -21,7 +21,7 @@ func ListHandler(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, "Session check needs parameters", http.StatusBadGateway)
 		return
 	}
-	hists, err := ListHistories(db, m["token"][0])
+	hists, err := listHistories(db, m["token"][0])
 	if err != nil {
 		if _, ok := err.(*cmodel.SessionNotFoundError); ok {
 			http.Error(w, err.Error(), http.StatusNotFound)
@@ -42,7 +42,7 @@ func ListHandler(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-type", "application/json")
 	w.Write(resJson)
 }
-func ListHistories(db *mgo.Database, tk string) (nhs []*cmodel.NaiveHistory, err error) {
+func listHistories(db *mgo.Database, tk string) (nhs []*cmodel.NaiveHistory, err error) {
 
 	//TODO: duplcation for usession
 	usession, err := GetUserSession(db, tk)
@@ -70,14 +70,5 @@ func ListHistories(db *mgo.Database, tk string) (nhs []*cmodel.NaiveHistory, err
 	if err != nil {
 		panic(err)
 	}
-	/*
-		c := db.C(COMMAND_COLLECTION)
-		cmd := model.OldCommandItem{}
-		iter := c.Find(M{"uid": usession.UID}).Limit(100).Iter()
-		defer iter.Close()
-		for iter.Next(&cmd) {
-			cmds = append(cmds, cmodel.Command{Cmd: cmd.Data.Command, Timestamp: cmd.Date})
-		}
-	*/
 	return
 }

@@ -171,7 +171,6 @@ func FindHistoryLastN(db *mgo.Database, tk string, limit int) (hists []*model.Hi
 		limit = count
 	}
 	iter := q.Limit(count).Iter()
-	println("count=", count)
 	defer iter.Close()
 	h := history{}
 	counter := 0
@@ -183,7 +182,6 @@ func FindHistoryLastN(db *mgo.Database, tk string, limit int) (hists []*model.Hi
 			break
 		}
 		hist := decodeHistory(&h, mf)
-		println(hist.Command())
 		hists = append(hists, hist)
 	}
 	return
@@ -197,9 +195,17 @@ func FindHistoryFromNum(db *mgo.Database, tk string, num int) (hist *model.Histo
 	user, err := GetUserSession(db, tk)
 	c := db.C(HISTORY_COLLECTION)
 	q := c.Find(M{"uid": user.UID})
-	iter := q.Limit(100).Iter()
 	count, _ := q.Count()
-	println("count=", count)
+	if count < num {
+		err = &cmodel.CommandNotFoundError{}
+		return
+	}
+	// default check
+	if 100 < count {
+		count = 100
+	}
+	iter := q.Limit(count).Iter()
+
 	defer iter.Close()
 	h := history{}
 	counter := 0
