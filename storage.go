@@ -99,12 +99,12 @@ func InsertCommandItem(db *mgo.Database, cmd *model.CommandItem) (err error) {
 
 	c := db.C(COMMAND_COLLECTION)
 	ci := model.CommandItem{}
-	err = c.Find(M{"hash": cmd.Hash}).One(&ci)
+	err = c.Find(M{"hash": cmd.Hash, "hitcount": 1}).One(&ci)
 	if err == nil {
+		// err == nil means, we found
 		if cmd.Command == ci.Command {
 			log.Printf("Duplicated! '%s'\n", cmd.Command)
 			// TODO: need to count up?
-
 			return
 		}
 	}
@@ -116,8 +116,8 @@ func InsertCommandItem(db *mgo.Database, cmd *model.CommandItem) (err error) {
 }
 
 func InsertHistory(db *mgo.Database, hist *model.History) (err error) {
-	c := db.C(HISTORY_COLLECTION)
 
+	c := db.C(HISTORY_COLLECTION)
 	histBuf := &history{}
 	err = c.Find(M{"date": hist.Date}).One(&histBuf)
 	if err == nil {
@@ -142,8 +142,8 @@ func InsertHistory(db *mgo.Database, hist *model.History) (err error) {
 
 // This is private, we cannot use this from external
 func insertFlow(db *mgo.Database, mf *model.Flow) (err error) {
-	c := db.C(FLOW_COLLECTION)
 
+	c := db.C(FLOW_COLLECTION)
 	for _, ci := range mf.ItemsPtr {
 		err = InsertCommandItem(db, ci)
 		if err != nil {
@@ -176,7 +176,7 @@ func FindHistoryFromNum(db *mgo.Database, tk string, num int) (hist *model.Histo
 			// findFlow
 			mf, err := findFlow(db, h.Flow)
 			if err != nil {
-				println("Flow is nil")
+				log.Println("Flow is nil")
 				break
 			}
 			hist = decodeHistory(&h, mf)
@@ -184,7 +184,6 @@ func FindHistoryFromNum(db *mgo.Database, tk string, num int) (hist *model.Histo
 			break
 		}
 	}
-	println("Num : ", num, ", counter:", counter)
 	if counter != num || hist == nil {
 		err = &cmodel.CommandNotFoundError{}
 	}
