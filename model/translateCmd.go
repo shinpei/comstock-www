@@ -22,3 +22,32 @@ func TranslateCommand1to2(item *OldCommandItem) *History {
 func TranslateNaiveHistoryToHistory(uid int, item *cmodel.NaiveHistory) *History {
 	return CreateHistory(uid, item.Cmds, item.Date, item.Description)
 }
+
+func TranslateHistoryToNaiveHistory(uid int, hist *History) (nh *cmodel.NaiveHistory) {
+	l := len(hist.FlowPtr.Items)
+	if l == 1 {
+		nh = &cmodel.NaiveHistory{
+			Date:        hist.Date,
+			Description: hist.Description,
+			Cmds:        []string{hist.Command()},
+			Shell:       "",
+		}
+
+	} else if l > 1 {
+		var cmds []string
+		for _, cmdPtr := range hist.FlowPtr.ItemsPtr {
+			cmds = append(cmds, cmdPtr.Command)
+		}
+		nh = &cmodel.NaiveHistory{
+			Date:        hist.Date,
+			Description: hist.Description,
+			Cmds:        cmds,
+			Shell:       "",
+		}
+
+	} else {
+		panic("Cannot translate")
+		nh = nil
+	}
+	return
+}

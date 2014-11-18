@@ -157,16 +157,28 @@ func insertFlow(db *mgo.Database, mf *model.Flow) (err error) {
 	}
 	return
 }
-
+func FindHistoryLastN(db *mgo.Database, tk string, num int) (hists []*model.History, err error) {
+	if num < 1 {
+		err = &cmodel.IllegalArgumentError{}
+		return
+	}
+	hist, err := FindHistoryFromNum(db, tk, 2)
+	hists = []*model.History{hist}
+	return
+}
 func FindHistoryFromNum(db *mgo.Database, tk string, num int) (hist *model.History, err error) {
 	if num < 1 {
-		// TODO: IllegalArgumentError()?
-		err = &cmodel.CommandNotFoundError{}
+		err = &cmodel.IllegalArgumentError{}
 		return
 	}
 	user, err := GetUserSession(db, tk)
 	c := db.C(HISTORY_COLLECTION)
+	println("uid=", user.UID)
+	q := c.Find(M{"uid": user.UID})
+
 	iter := c.Find(M{"uid": user.UID}).Limit(100).Iter()
+	count, _ := q.Count()
+	println("count=", count)
 	defer iter.Close()
 	h := history{}
 	counter := 0
@@ -185,7 +197,7 @@ func FindHistoryFromNum(db *mgo.Database, tk string, num int) (hist *model.Histo
 		}
 	}
 	if counter != num || hist == nil {
-		err = &cmodel.CommandNotFoundError{}
+		err = &cmodel.IllegalArgumentError{}
 	}
 
 	return
