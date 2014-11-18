@@ -157,15 +157,38 @@ func insertFlow(db *mgo.Database, mf *model.Flow) (err error) {
 	}
 	return
 }
-func FindHistoryLastN(db *mgo.Database, tk string, num int) (hists []*model.History, err error) {
-	if num < 1 {
+
+func FindHistoryLastN(db *mgo.Database, tk string, limit int) (hists []*model.History, err error) {
+	if limit < 1 {
 		err = &cmodel.IllegalArgumentError{}
 		return
 	}
-	hist, err := FindHistoryFromNum(db, tk, 2)
-	hists = []*model.History{hist}
+	user, err := GetUserSession(db, tk)
+	c := db.C(HISTORY_COLLECTION)
+	q := c.Find(M{"uid": user.UID})
+	count, _ := q.Count()
+	if count < limit {
+		limit = count
+	}
+	iter := q.Limit(count).Iter()
+	println("count=", count)
+	defer iter.Close()
+	h := history{}
+	counter := 0
+	for iter.Next(&h) {
+		counter++
+		mf, err := findFlow(db, h.Flow)
+		if err != nil {
+			log.Println("Flow is nil")
+			break
+		}
+		hist := decodeHistory(&h, mf)
+		println(hist.Command())
+		hists = append(hists, hist)
+	}
 	return
 }
+
 func FindHistoryFromNum(db *mgo.Database, tk string, num int) (hist *model.History, err error) {
 	if num < 1 {
 		err = &cmodel.IllegalArgumentError{}
@@ -173,10 +196,8 @@ func FindHistoryFromNum(db *mgo.Database, tk string, num int) (hist *model.Histo
 	}
 	user, err := GetUserSession(db, tk)
 	c := db.C(HISTORY_COLLECTION)
-	println("uid=", user.UID)
 	q := c.Find(M{"uid": user.UID})
-
-	iter := c.Find(M{"uid": user.UID}).Limit(100).Iter()
+	iter := q.Limit(100).Iter()
 	count, _ := q.Count()
 	println("count=", count)
 	defer iter.Close()
@@ -192,7 +213,6 @@ func FindHistoryFromNum(db *mgo.Database, tk string, num int) (hist *model.Histo
 				break
 			}
 			hist = decodeHistory(&h, mf)
-
 			break
 		}
 	}
@@ -226,7 +246,7 @@ func findCommandItems(db *mgo.Database, cIDs []model.CommandId) (mcis []*model.C
 	c := db.C(COMMAND_COLLECTION)
 	for _, cid := range cIDs {
 		cmd := model.CommandItem{}
-		err = c.Find(M{"hash": cid}).One(&cmd)
+		err = c.Find(M{"hash": cid, "hitcount": 1}).One(&cmd) // FIXME: for olddata
 		if err != nil {
 			// cannot find, database corrupy?
 			break

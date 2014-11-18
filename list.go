@@ -54,7 +54,7 @@ func ListHistories(db *mgo.Database, tk string) (nhs []*cmodel.NaiveHistory, err
 		}
 	}
 
-	hists, err := FindHistoryLastN(db, tk, 1)
+	hists, err := FindHistoryLastN(db, tk, 100) // defulat limit is 100
 	if err != nil {
 		if _, ok := err.(*cmodel.CommandNotFoundError); ok {
 			return
