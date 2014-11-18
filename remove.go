@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/shinpei/comstock-www/model"
+	//	"github.com/shinpei/comstock-www/model"
 	cmodel "github.com/shinpei/comstock/model"
 	"labix.org/v2/mgo"
-	"log"
+	//	"log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -45,33 +45,37 @@ func RemoveOneHandler(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func removeOne(db *mgo.Database, token string, num int) (err error) {
-	user, err := GetUserSession(db, token)
+func removeOne(db *mgo.Database, tk string, idx int) (err error) {
+	user, err := GetUserSession(db, tk)
 	if err != nil {
 		return
 	}
-	c := db.C(COMMAND_COLLECTION)
-	iter := c.Find(M{"uid": user.UID}).Limit(100).Iter()
-	defer iter.Close()
-	counter := 0
-	ci := model.OldCommandItem{}
-	for iter.Next(&ci) {
-		counter++
-		if counter == num {
-			id := ci.ID
+	err = RemoveHistoryNth(db, user.UID, idx)
 
-			err = c.RemoveId(id)
-			if err != nil {
-				log.Println("Cannot delete")
-				err = &cmodel.ServerSystemError{}
-				return
+	/*
+		c := db.C(COMMAND_COLLECTION)
+		iter := c.Find(M{"uid": user.UID}).Limit(100).Iter()
+		defer iter.Close()
+		counter := 0
+		ci := model.OldCommandItem{}
+		for iter.Next(&ci) {
+			counter++
+			if counter == idx {
+				id := ci.ID
+
+				err = c.RemoveId(id)
+				if err != nil {
+					log.Println("Cannot delete")
+					err = &cmodel.ServerSystemError{}
+					return
+				}
+				break
 			}
 		}
-	}
-	if counter < num {
-		err = &cmodel.CommandNotFoundError{}
-		return
-	}
-
+		if counter < idx {
+			err = &cmodel.CommandNotFoundError{}
+			return
+		}
+	*/
 	return
 }

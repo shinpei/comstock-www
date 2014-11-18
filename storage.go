@@ -261,3 +261,61 @@ func findCommandItems(db *mgo.Database, cIDs []model.CommandId) (mcis []*model.C
 	}
 	return
 }
+
+func removeFlow(db *mgo.Database, fID bson.ObjectId) (err error) {
+
+	c := db.C(FLOW_COLLECTION)
+	f := flow{}
+	err = c.Find(M{"id": fID}).One(&f)
+	if err != nil {
+		fmt.Println("not fount for flow id=", fID)
+		return
+	}
+	// TODO : delete command item??
+	err = c.Remove(M{"id": fID})
+	if err != nil {
+		fmt.Println("Cannot delete")
+		err = &cmodel.ServerSystemError{}
+	}
+	return
+}
+
+func RemoveHistoryNth(db *mgo.Database, uid int, idx int) (err error) {
+
+	c := db.C(HISTORY_COLLECTION)
+	q := c.Find(M{"uid": uid})
+	count, err := q.Count()
+	if count < idx {
+		err = &cmodel.CommandNotFoundError{}
+	}
+	if 100 < count {
+		count = 100
+	}
+	iter := q.Limit(count).Iter()
+	defer iter.Close()
+	counter := 0
+	h := history{}
+	for iter.Next(&h) {
+		counter++
+		if counter == idx {
+			err = removeFlow(db, h.Flow)
+			if err != nil {
+				return
+			}
+
+			// err = c.RemoveId(id)
+			// if err != nil {
+			// 	log.Println("Cannot delete history")
+			// 	err = &cmodel.ServerSystemError{}
+			// 	return
+			// }
+			break
+		}
+	}
+	if counter < idx {
+		err = &cmodel.CommandNotFoundError{}
+		return
+	}
+	return
+
+}
