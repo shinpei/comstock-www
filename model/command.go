@@ -106,20 +106,27 @@ func CreateFlow(cis []*CommandItem) (fID bson.ObjectId, f *Flow) {
 	return
 }
 
-func CreateHistory(uid int, cmd string, date time.Time, desc string) *History {
-	hash, ci := CreateCommandItem(cmd)
-	fID := bson.NewObjectId()
-	f := &Flow{
-		ID:       fID,
-		Items:    []CommandId{hash},
-		ItemsPtr: []*CommandItem{ci},
+func CreateHistory(uid int, cmds []string, date time.Time, desc string) (his *History) {
+	if len(cmds) == 1 {
+		hash, ci := CreateCommandItem(cmds[0])
+		fID := bson.NewObjectId()
+		f := &Flow{
+			ID:       fID,
+			Items:    []CommandId{hash},
+			ItemsPtr: []*CommandItem{ci},
+		}
+		his = &History{
+			UID:         uid,
+			Date:        date,
+			Description: desc,
+			Flow:        fID,
+			FlowPtr:     f,
+		}
+	} else if len(cmds) > 1 {
+		//TODO
+		his = nil
+	} else {
+		panic("len(cmds) is 0, no history made")
 	}
-	return &History{
-		UID:         uid,
-		Date:        date,
-		Description: desc,
-		Flow:        fID,
-		FlowPtr:     f,
-	}
-
+	return
 }

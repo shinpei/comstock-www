@@ -1,6 +1,7 @@
 package model
 
 import (
+	cmodel "github.com/shinpei/comstock/model"
 	"strconv"
 	"time"
 )
@@ -15,5 +16,9 @@ func TranslateCommand1to2(item *OldCommandItem) *History {
 		panic(err)
 	}
 	// create CommandDataStructure
-	return CreateHistory(item.UID, item.Data.Command, date, item.Data.Desc)
+	return CreateHistory(item.UID, []string{item.Data.Command}, date, item.Data.Desc)
+}
+
+func TranslateNaiveHistoryToHistory(uid int, item *cmodel.NaiveHistory) *History {
+	return CreateHistory(uid, item.Cmds, item.Date, item.Description)
 }

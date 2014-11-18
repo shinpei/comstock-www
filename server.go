@@ -23,7 +23,7 @@ func NewServer(config Config) *Server {
 	mux.HandleFunc("/checkSession", CheckSessionHandler)
 	mux.HandleFunc("/list", ListHandler)
 	mux.HandleFunc("/registerUser", RegistUserHandler)
-	mux.HandleFunc("/postCommand", PostCommandHandler)
+	mux.HandleFunc("/postHistory", PostHistoryHandler)
 	mux.HandleFunc("/fetchCommandFromNumber", FetchHandler)
 	mux.HandleFunc("/removeOne", RemoveOneHandler)
 	//	mux.HandleFunc("/postChunkCommands", PostChunkCommandsHandler)
