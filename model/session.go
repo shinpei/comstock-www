@@ -2,7 +2,6 @@ package model
 
 import (
 	"labix.org/v2/mgo/bson"
-	"log"
 	"time"
 )
 
@@ -17,6 +16,5 @@ func CreateNewSession(token string, uid int) *Session {
 	return &Session{ID: bson.NewObjectId(), Token: token, UID: uid, Expires: time.Now().Unix()}
 }
 func UpdateSessionToken(id *bson.ObjectId, token string, uid int) *Session {
-	log.Printf("Writing : %#v\n", *id)
 	return &Session{ID: *id, Token: token, UID: uid, Expires: time.Now().Unix()}
 }

@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"time"
 )
 
 func PostHistoryHandler(w http.ResponseWriter, req *http.Request) {
@@ -26,7 +27,7 @@ func PostHistoryHandler(w http.ResponseWriter, req *http.Request) {
 		panic(err)
 	}
 	// actual save to the mongo
-	err = postHistory(db, m["token"][0], &nh)
+	err = postNaiveHistory(db, m["token"][0], &nh)
 	//	err = postHistory(db, m["authinfo"][0],ccmd)
 	if _, ok := err.(*cmodel.SessionExpiresError); ok {
 		http.Error(w, err.Error(), http.StatusForbidden)
@@ -38,7 +39,7 @@ func PostHistoryHandler(w http.ResponseWriter, req *http.Request) {
 	w.Write([]byte("Success"))
 }
 
-func postHistory(db *mgo.Database, tk string, nh *cmodel.NaiveHistory) (err error) {
+func postNaiveHistory(db *mgo.Database, tk string, nh *cmodel.NaiveHistory) (err error) {
 	usession, err := GetUserSession(db, tk)
 	hist := model.TranslateNaiveHistoryToHistory(usession.UID, nh)
 	err = InsertHistory(db, hist)
@@ -48,10 +49,9 @@ func postHistory(db *mgo.Database, tk string, nh *cmodel.NaiveHistory) (err erro
 	return
 }
 
-/*
 func postHistory(db *mgo.Database, tk string, cmd string, date time.Time, desc string) (err error) {
 	user, err := GetUserSession(db, tk)
-	hist := model.CreateHistory(user.UID, cmd, date, desc)
+	hist := model.CreateHistory(user.UID, []string{cmd}, date, desc)
 
 	err = InsertHistory(db, hist)
 	if err != nil {
@@ -59,7 +59,6 @@ func postHistory(db *mgo.Database, tk string, cmd string, date time.Time, desc s
 	}
 	return
 }
-*/
 
 /*
 func PostChunkCommandsHandler(w http.ResponseWriter, req *http.Request) {

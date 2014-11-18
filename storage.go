@@ -121,6 +121,7 @@ func InsertHistory(db *mgo.Database, hist *model.History) (err error) {
 	histBuf := &history{}
 	err = c.Find(M{"date": hist.Date}).One(&histBuf)
 	if err == nil {
+		//TODO: see UID too
 		log.Printf("Duplicated timestamp, %#x\n", hist.Date)
 		return
 	}
@@ -129,7 +130,6 @@ func InsertHistory(db *mgo.Database, hist *model.History) (err error) {
 	if err != nil {
 		return
 	}
-
 	// remove FlowPtr
 	h := encodeHistory(hist)
 	err = c.Insert(h)
