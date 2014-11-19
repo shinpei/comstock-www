@@ -29,6 +29,11 @@ type history struct {
 	Description string
 	Flow        bson.ObjectId
 }
+type historyWithId struct {
+	ID   bson.ObjectId `bson:"_id"`
+	UID  int
+	Flow bson.ObjectId
+}
 
 type flow struct {
 	ID    bson.ObjectId
@@ -274,8 +279,10 @@ func removeFlow(db *mgo.Database, fID bson.ObjectId) (err error) {
 	// TODO : delete command item??
 	err = c.Remove(M{"id": fID})
 	if err != nil {
-		fmt.Println("Cannot delete")
-		err = &cmodel.ServerSystemError{}
+		if err != mgo.ErrNotFound {
+			fmt.Println("Cannot delete")
+			err = &cmodel.ServerSystemError{}
+		}
 	}
 	return
 }
@@ -294,21 +301,21 @@ func RemoveHistoryNth(db *mgo.Database, uid int, idx int) (err error) {
 	iter := q.Limit(count).Iter()
 	defer iter.Close()
 	counter := 0
-	h := history{}
-	for iter.Next(&h) {
+	hwi := historyWithId{}
+	for iter.Next(&hwi) {
 		counter++
 		if counter == idx {
-			err = removeFlow(db, h.Flow)
+			err = removeFlow(db, hwi.Flow)
 			if err != nil {
 				return
 			}
-
-			// err = c.RemoveId(id)
-			// if err != nil {
-			// 	log.Println("Cannot delete history")
-			// 	err = &cmodel.ServerSystemError{}
-			// 	return
-			// }
+			id := hwi.ID
+			err = c.RemoveId(id)
+			if err != nil {
+				log.Println("Cannot delete history")
+				err = &cmodel.ServerSystemError{}
+				return
+			}
 			break
 		}
 	}
