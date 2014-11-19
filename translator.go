@@ -14,10 +14,10 @@ func TransHandler(w http.ResponseWriter, req *http.Request) {
 	session, db := getSessionAndDB()
 	defer session.Close()
 	m, _ := url.ParseQuery(req.URL.RawQuery)
-	if m["authinfo"] == nil {
+	if m["token"] == nil {
 		http.Error(w, "Invalid trans command request", http.StatusBadRequest)
 	}
-	token := m["authinfo"][0]
+	token := m["token"][0]
 
 	user, err := GetUserSession(db, token)
 	if err != nil {

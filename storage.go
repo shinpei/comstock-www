@@ -14,7 +14,7 @@ import (
 
 const (
 	MONGO_DATABSE_NAME string = "comstock-www"
-	AUTH_COLLECTION    string = "authinfo"
+	AUTH_COLLECTION    string = "authinfo" // have to rename...
 	USER_COLLECTION    string = "user"
 	SESSION_COLLECTON  string = "session"
 	COMMAND_COLLECTION string = "commands"

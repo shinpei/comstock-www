@@ -28,7 +28,6 @@ func PostHistoryHandler(w http.ResponseWriter, req *http.Request) {
 	}
 	// actual save to the mongo
 	err = postNaiveHistory(db, m["token"][0], &nh)
-	//	err = postHistory(db, m["authinfo"][0],ccmd)
 	if _, ok := err.(*cmodel.SessionExpiresError); ok {
 		http.Error(w, err.Error(), http.StatusForbidden)
 		return
