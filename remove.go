@@ -51,31 +51,5 @@ func removeOne(db *mgo.Database, tk string, idx int) (err error) {
 		return
 	}
 	err = RemoveHistoryNth(db, user.UID, idx)
-
-	/*
-		c := db.C(COMMAND_COLLECTION)
-		iter := c.Find(M{"uid": user.UID}).Limit(100).Iter()
-		defer iter.Close()
-		counter := 0
-		ci := model.OldCommandItem{}
-		for iter.Next(&ci) {
-			counter++
-			if counter == idx {
-				id := ci.ID
-
-				err = c.RemoveId(id)
-				if err != nil {
-					log.Println("Cannot delete")
-					err = &cmodel.ServerSystemError{}
-					return
-				}
-				break
-			}
-		}
-		if counter < idx {
-			err = &cmodel.CommandNotFoundError{}
-			return
-		}
-	*/
 	return
 }
