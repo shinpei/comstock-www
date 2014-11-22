@@ -11,9 +11,9 @@ import (
 )
 
 func RegistUserHandler(w http.ResponseWriter, req *http.Request) {
+
 	session, db := getSessionAndDB()
 	defer session.Close()
-
 	m, err := url.ParseQuery(req.URL.RawQuery)
 	if err != nil {
 		log.Fatalf("Couldn't parse query, %s\n", req.URL.RawQuery)

@@ -2,6 +2,7 @@ package model
 
 import (
 	cmodel "github.com/shinpei/comstock/model"
+	"log"
 	"strconv"
 	"time"
 )
@@ -9,11 +10,16 @@ import (
 // suppose Single item will come
 func TranslateCommand1to2(item *OldCommandItem) *History {
 	// parse to int64
-	timeVal, err := strconv.ParseInt(item.Date, 10, 64)
-	date := time.Unix(0, timeVal*1000000)
-	println(date.Format(time.RFC3339))
-	if err != nil {
-		panic(err)
+	var date time.Time
+	if item.Date == "" {
+		date = time.Now()
+	} else {
+		timeVal, err := strconv.ParseInt(item.Date, 10, 64)
+		if err != nil {
+			log.Println("Couldn't parse time=", date, err)
+			date = time.Now()
+		}
+		date = time.Unix(0, timeVal*1000000)
 	}
 	// create CommandDataStructure
 	return CreateHistory(item.UID, []string{item.Data.Command}, date, item.Data.Desc)

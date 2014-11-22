@@ -16,7 +16,7 @@ const (
 	MONGO_DATABSE_NAME string = "comstock-www"
 	AUTH_COLLECTION    string = "authinfo" // have to rename...
 	USER_COLLECTION    string = "user"
-	SESSION_COLLECTON  string = "session"
+	SESSION_COLLECTION string = "session"
 	COMMAND_COLLECTION string = "commands"
 	FLOW_COLLECTION    string = "flow"
 	HISTORY_COLLECTION string = "history"

@@ -14,12 +14,12 @@ import (
 
 func GetUserSession(db *mgo.Database, token string) (session *model.Session, err error) {
 
-	c := db.C(SESSION_COLLECTON)
+	c := db.C(SESSION_COLLECTION)
 	session = &model.Session{}
 	err = c.Find(M{"token": token}).One(&session)
 	if err != nil {
 		// session not found. reject.
-		log.Println("session not found")
+		log.Println("session not found for token", token)
 		err = &cmodel.SessionNotFoundError{}
 	} else {
 
@@ -74,7 +74,7 @@ func loginAs(db *mgo.Database, l *model.LoginRequest) (s *model.Session, err err
 		return
 	}
 
-	c = db.C(SESSION_COLLECTON)
+	c = db.C(SESSION_COLLECTION)
 	s = new(model.Session)
 	err = c.Find(M{"uid": user.UID}).One(&s)
 	if err != nil {
