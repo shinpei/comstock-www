@@ -88,13 +88,13 @@ func getSessionAndDB() (*mgo.Session, *mgo.Database) {
 	}
 	u, err := url.Parse(mongoURI)
 	if err != nil {
-		panic("couldn't parse mongouri")
+		log.Fatalln("Couldn't parse mongouri", mongoURI)
 	}
 	dbname := u.Path
 	dbname = dbname[1:] // remove slash
 	session, err := mgo.DialWithTimeout(mongoURI, time.Duration(3)*time.Second)
 	if err != nil {
-		panic("Coulnd't dial")
+		log.Fatalln("Coulnd't dial to mongo server")
 	}
 	session.SetSafe(&mgo.Safe{})
 	return session, session.DB(dbname)
@@ -259,7 +259,7 @@ func findCommandItems(db *mgo.Database, cIDs []model.CommandId) (mcis []*model.C
 		cmd := model.CommandItem{}
 		err = c.Find(M{"hash": cid, "hitcount": 1}).One(&cmd) // FIXME: for olddata
 		if err != nil {
-			// cannot find, database corrupy?
+			// cannot find, database corrupt?
 			break
 		}
 		mcis = append(mcis, &cmd)

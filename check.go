@@ -8,6 +8,7 @@ import (
 )
 
 func CheckSessionHandler(w http.ResponseWriter, req *http.Request) {
+
 	session, db := getSessionAndDB()
 	defer session.Close()
 	// make sure param exists

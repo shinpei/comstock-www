@@ -68,7 +68,7 @@ func listHistories(db *mgo.Database, tk string) (nhs []*cmodel.NaiveHistory, err
 		nhs = append(nhs, model.TranslateHistoryToNaiveHistory(usession.UID, hist))
 	}
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	return
 }

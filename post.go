@@ -24,7 +24,7 @@ func PostHistoryHandler(w http.ResponseWriter, req *http.Request) {
 	nh := cmodel.NaiveHistory{}
 	err := json.Unmarshal([]byte(m["history"][0]), &nh)
 	if err != nil {
-		panic(err)
+		log.Panicln(err)
 	}
 	// actual save to the mongo
 	err = postNaiveHistory(db, m["token"][0], &nh)

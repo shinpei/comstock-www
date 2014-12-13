@@ -52,8 +52,7 @@ func TranslateHistoryToNaiveHistory(uid int, hist *History) (nh *cmodel.NaiveHis
 		}
 
 	} else {
-		panic("Cannot translate")
-		nh = nil
+		log.Panicln("Cannot translate")
 	}
 	return
 }

@@ -4,6 +4,7 @@ import (
 	"crypto/sha1"
 	"io"
 	"labix.org/v2/mgo/bson"
+	"log"
 	"time"
 )
 
@@ -120,7 +121,7 @@ func CreateHistory(uid int, cmds []string, date time.Time, desc string) (his *Hi
 		_, f := CreateFlow(cis)
 		his = CreateHistoryFromFlow(uid, date, desc, f)
 	} else {
-		panic("len(cmds) is 0, no history made")
+		log.Fatalln("len(cmds) is 0, no history made")
 	}
 	return
 }
