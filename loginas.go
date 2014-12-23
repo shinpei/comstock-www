@@ -12,6 +12,10 @@ import (
 	"time"
 )
 
+const (
+	SESSION_KEEP_HOURS = 24 //hours
+)
+
 func GetUserSession(db *mgo.Database, token string) (session *model.Session, err error) {
 
 	c := db.C(SESSION_COLLECTION)
@@ -19,12 +23,22 @@ func GetUserSession(db *mgo.Database, token string) (session *model.Session, err
 	err = c.Find(M{"token": token}).One(&session)
 	if err != nil {
 		// session not found. reject.
-		log.Println("session not found for token", token)
+		log.Println("Session not found for token", token)
 		err = &cmodel.SessionNotFoundError{}
+		return
 	} else {
 
 	}
-
+	now := time.Now()
+	then := session.Expires
+	diff := now.Sub(then)
+	//D("now: ", now.Format(time.RFC1123))
+	//D("then: ", then.Format(time.RFC1123))
+	//D(diff.Seconds())
+	if diff.Hours() > SESSION_KEEP_HOURS {
+		log.Println("Session expires for token", token)
+		err = &cmodel.SessionExpiresError{}
+	}
 	// TODO: compare time. document's time is unix time
 	//	unixTime := time.Unix(session.Expires, 0)
 	//	println(unixTime.Format(time.RFC3339))
@@ -64,6 +78,7 @@ func LoginAsHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func loginAs(db *mgo.Database, l *model.LoginRequest) (s *model.Session, err error) {
+
 	c := db.C(USER_COLLECTION)
 	user := model.User{}
 	D("Logging in with Mail:", l.Mail())
@@ -95,10 +110,13 @@ func loginAs(db *mgo.Database, l *model.LoginRequest) (s *model.Session, err err
 	} else {
 
 		// check weather it expires or not
-		exp := time.Unix(s.Expires, 0)
+		exp := s.Expires
 		now := time.Now()
-		if exp.Before(now) {
+		diff := now.Sub(exp)
+		println("Second: ", diff.Seconds())
+		if diff.Seconds() > 20 {
 			// Session expired!
+			println("Session seems expired")
 			// INFO: Made new variable for avoiding shadowing compile error
 			newSession, errAuth := authenticateUser(db, user.UID, l, &s.ID)
 			// update session

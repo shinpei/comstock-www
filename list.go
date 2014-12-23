@@ -11,6 +11,7 @@ import (
 )
 
 func ListHandler(w http.ResponseWriter, req *http.Request) {
+
 	session, db := getSessionAndDB()
 	defer session.Close()
 
@@ -32,6 +33,9 @@ func ListHandler(w http.ResponseWriter, req *http.Request) {
 		} else if _, ok := err.(*cmodel.IllegalArgumentError); ok {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
+		} else if _, ok := err.(*cmodel.SessionExpiresError); ok {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	}
 	resJson, err := json.Marshal(hists)
@@ -42,12 +46,15 @@ func ListHandler(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-type", "application/json")
 	w.Write(resJson)
 }
+
 func listHistories(db *mgo.Database, tk string) (nhs []*cmodel.NaiveHistory, err error) {
 
 	//TODO: duplcation for usession
 	usession, err := GetUserSession(db, tk)
 	if err != nil {
 		if _, ok := err.(*cmodel.SessionNotFoundError); ok {
+			return
+		} else if _, ok := err.(*cmodel.SessionExpiresError); ok {
 			return
 		} else {
 			log.Fatal("Crash:", err.Error())

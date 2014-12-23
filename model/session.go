@@ -9,12 +9,12 @@ type Session struct {
 	ID      bson.ObjectId `json:"id" bson:"_id"`
 	Token   string
 	UID     int
-	Expires int64 // TODO: replace it with time
+	Expires time.Time // TODO: replace it with time
 }
 
 func CreateNewSession(token string, uid int) *Session {
-	return &Session{ID: bson.NewObjectId(), Token: token, UID: uid, Expires: time.Now().Unix()}
+	return &Session{ID: bson.NewObjectId(), Token: token, UID: uid, Expires: time.Now()}
 }
 func UpdateSessionToken(id *bson.ObjectId, token string, uid int) *Session {
-	return &Session{ID: *id, Token: token, UID: uid, Expires: time.Now().Unix()}
+	return &Session{ID: *id, Token: token, UID: uid, Expires: time.Now()}
 }

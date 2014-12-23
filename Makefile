@@ -5,7 +5,7 @@ all:
 
 .PHONY: release
 release:
-	go build 
+	go build  -ldflags '-s'
 
 clean:
 	go clean
