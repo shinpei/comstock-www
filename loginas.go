@@ -114,12 +114,12 @@ func loginAs(db *mgo.Database, l *model.LoginRequest) (s *model.Session, err err
 		now := time.Now()
 		diff := now.Sub(exp)
 		println("Second: ", diff.Seconds())
-		if diff.Seconds() > 20 {
+		if diff.Hours() > SESSION_KEEP_HOURS {
 			// Session expired!
 			println("Session seems expired")
 			// INFO: Made new variable for avoiding shadowing compile error
 			newSession, errAuth := authenticateUser(db, user.UID, l, &s.ID)
-			// update session
+			// TODO? update session
 			if errAuth != nil {
 				err = errAuth
 				return
