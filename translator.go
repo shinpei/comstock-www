@@ -18,9 +18,8 @@ func TransHandler(w http.ResponseWriter, req *http.Request) {
 	c := db.C(USER_COLLECTION)
 	iter := c.Find(M{}).Iter()
 	defer iter.Close()
-	u := model.User{}
+	u := &model.User{}
 	for iter.Next(&u) {
-		fmt.Printf("user:%#v\n", u)
 		uid := u.UID
 		c2 := db.C(COMMAND_COLLECTION)
 		iter := c2.Find(M{"uid": uid}).Iter()

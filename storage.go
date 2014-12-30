@@ -77,7 +77,6 @@ func decodeFlow(f *flow, mcis []*model.CommandItem) *model.Flow {
 		Items:    f.Items,
 		ItemsPtr: mcis,
 	}
-	return nil
 }
 
 //================= functions =========================
@@ -123,13 +122,14 @@ func InsertCommandItem(db *mgo.Database, cmd *model.CommandItem) (err error) {
 func InsertHistory(db *mgo.Database, hist *model.History) (err error) {
 
 	c := db.C(HISTORY_COLLECTION)
-	histBuf := &history{}
-	err = c.Find(M{"date": hist.Date}).One(&histBuf)
+	histBuf := histPool.Get().(*history)
+	err = c.Find(M{"date": hist.Date}).One(histBuf)
 	if err == nil {
 		//TODO: see UID too
 		log.Printf("Duplicated timestamp, %#x\n", hist.Date)
 		return
 	}
+	histPool.Put(histBuf)
 
 	err = insertFlow(db, hist.FlowPtr)
 	if err != nil {
@@ -137,6 +137,7 @@ func InsertHistory(db *mgo.Database, hist *model.History) (err error) {
 	}
 	// remove FlowPtr
 	h := encodeHistory(hist)
+
 	err = c.Insert(h)
 	if err != nil {
 		log.Println("Cannot save history", err.Error())
@@ -177,16 +178,17 @@ func FindHistoryLastN(db *mgo.Database, tk string, limit int) (hists []*model.Hi
 	}
 	iter := q.Limit(count).Iter()
 	defer iter.Close()
-	h := history{}
+	hists = make([]*model.History, 0, count)
+	h := &history{}
 	counter := 0
-	for iter.Next(&h) {
+	for iter.Next(h) {
 		counter++
 		mf, err := findFlow(db, h.Flow)
 		if err != nil {
 			log.Println("Flow is nil")
 			break
 		}
-		hist := decodeHistory(&h, mf)
+		hist := decodeHistory(h, mf)
 		hists = append(hists, hist)
 	}
 	return
@@ -212,9 +214,9 @@ func FindHistoryFromNum(db *mgo.Database, tk string, num int) (hist *model.Histo
 	iter := q.Limit(count).Iter()
 
 	defer iter.Close()
-	h := history{}
+	h := histPool.Get().(*history)
 	counter := 0
-	for iter.Next(&h) {
+	for iter.Next(h) {
 		counter++
 		if counter == num {
 			// findFlow
@@ -223,10 +225,11 @@ func FindHistoryFromNum(db *mgo.Database, tk string, num int) (hist *model.Histo
 				log.Println("Flow is nil")
 				break
 			}
-			hist = decodeHistory(&h, mf)
+			hist = decodeHistory(h, mf)
 			break
 		}
 	}
+	histPool.Put(h)
 	if counter != num || hist == nil {
 		err = &cmodel.IllegalArgumentError{}
 	}
@@ -238,8 +241,8 @@ func FindHistoryFromNum(db *mgo.Database, tk string, num int) (hist *model.Histo
 func findFlow(db *mgo.Database, fID bson.ObjectId) (mf *model.Flow, err error) {
 
 	c := db.C(FLOW_COLLECTION)
-	f := flow{}
-	err = c.Find(M{"id": fID}).One(&f)
+	f := flowPool.Get().(*flow)
+	err = c.Find(M{"id": fID}).One(f)
 	if err != nil {
 		fmt.Println("Not found:", fID)
 		return
@@ -249,20 +252,22 @@ func findFlow(db *mgo.Database, fID bson.ObjectId) (mf *model.Flow, err error) {
 	if err != nil {
 		fmt.Println("Command not found: ", f.Items)
 	}
-	mf = decodeFlow(&f, cis)
+	mf = decodeFlow(f, cis)
+	flowPool.Put(f)
 	return
 }
 
 func findCommandItems(db *mgo.Database, cIDs []model.CommandId) (mcis []*model.CommandItem, err error) {
 	c := db.C(COMMAND_COLLECTION)
 	for _, cid := range cIDs {
-		cmd := model.CommandItem{}
-		err = c.Find(M{"hash": cid, "hitcount": 1}).One(&cmd) // FIXME: for olddata
+		//		cmd := model.CommandItem{}
+		cmd := &model.CommandItem{}
+		err = c.Find(M{"hash": cid, "hitcount": 1}).One(cmd) // FIXME: for olddata
 		if err != nil {
 			// cannot find, database corrupt?
 			break
 		}
-		mcis = append(mcis, &cmd)
+		mcis = append(mcis, cmd)
 	}
 	return
 }
@@ -270,12 +275,13 @@ func findCommandItems(db *mgo.Database, cIDs []model.CommandId) (mcis []*model.C
 func removeFlow(db *mgo.Database, fID bson.ObjectId) (err error) {
 
 	c := db.C(FLOW_COLLECTION)
-	f := flow{}
-	err = c.Find(M{"id": fID}).One(&f)
+	f := flowPool.Get().(*flow)
+	err = c.Find(M{"id": fID}).One(f)
 	if err != nil {
 		fmt.Println("not fount for flow id=", fID)
 		return
 	}
+	flowPool.Put(f)
 	// TODO : delete command item??
 	err = c.Remove(M{"id": fID})
 	if err != nil {
@@ -301,8 +307,8 @@ func RemoveHistoryNth(db *mgo.Database, uid int, idx int) (err error) {
 	iter := q.Limit(count).Iter()
 	defer iter.Close()
 	counter := 0
-	hwi := historyWithId{}
-	for iter.Next(&hwi) {
+	hwi := &historyWithId{}
+	for iter.Next(hwi) {
 		counter++
 		if counter == idx {
 			err = removeFlow(db, hwi.Flow)

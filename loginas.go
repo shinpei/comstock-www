@@ -32,9 +32,6 @@ func GetUserSession(db *mgo.Database, token string) (session *model.Session, err
 	now := time.Now()
 	then := session.Expires
 	diff := now.Sub(then)
-	//D("now: ", now.Format(time.RFC1123))
-	//D("then: ", then.Format(time.RFC1123))
-	//D(diff.Seconds())
 	if diff.Hours() > SESSION_KEEP_HOURS {
 		log.Println("Session expires for token", token)
 		err = &cmodel.SessionExpiresError{}

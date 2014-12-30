@@ -4,6 +4,7 @@
 package main
 
 import (
+	//	"github.com/pkg/profile"
 	"os"
 )
 
@@ -13,6 +14,7 @@ const (
 
 func main() {
 	port := ""
+	//	defer profile.Start().Stop()
 	if os.Getenv("PORT") == "" {
 		port = "5000"
 	} else {
@@ -22,5 +24,6 @@ func main() {
 	server := NewServer(Config{
 		Port: port,
 	})
+
 	server.Start()
 }

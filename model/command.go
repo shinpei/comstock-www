@@ -113,7 +113,8 @@ func CreateHistory(uid int, cmds []string, date time.Time, desc string) (his *Hi
 		_, f := CreateFlow([]*CommandItem{ci})
 		his = CreateHistoryFromFlow(uid, date, desc, f)
 	} else if len(cmds) > 1 {
-		cis := []*CommandItem{}
+
+		cis := make([]*CommandItem, 0, len(cmds))
 		for _, cmd := range cmds {
 			_, ci := CreateCommandItem(cmd)
 			cis = append(cis, ci)
