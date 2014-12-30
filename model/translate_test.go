@@ -8,13 +8,13 @@ import (
 )
 
 func createCommandList() []*CommandItem {
-	_, ci1 := CreateCommandItem("ls -la")
-	_, ci2 := CreateCommandItem("wc -l")
+	ci1 := CreateCommandItem("ls -la")
+	ci2 := CreateCommandItem("wc -l")
 	return []*CommandItem{ci1, ci2}
 }
 
 func TestCreateCommandItem(t *testing.T) {
-	_, ci := CreateCommandItem("ls -la")
+	ci := CreateCommandItem("ls -la")
 	AssertEqual(t, "ls -la", ci.Command)
 }
 

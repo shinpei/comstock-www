@@ -36,9 +36,9 @@ func TestPostHistories(t *testing.T) {
 	tk := s.Token
 	_ = tk
 	// TODO: this create another hash.
-	_, ci1 := model.CreateCommandItem("ls -la")
+	ci1 := model.CreateCommandItem("ls -la")
 
-	_, ci2 := model.CreateCommandItem("wc -l")
+	ci2 := model.CreateCommandItem("wc -l")
 	cis := []*model.CommandItem{ci1, ci2}
 	_, f := model.CreateFlow(cis)
 	h := model.CreateHistoryFromFlow(1, time.Now(), "sample", f)

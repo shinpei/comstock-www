@@ -71,17 +71,15 @@ func CreateHistoryFromFlow(uid int, date time.Time, desc string, f *Flow) *Histo
 }
 
 // WARN: Command cannot be created freely.
-func CreateCommandItem(cmd string) (cid CommandId, item *CommandItem) {
+func CreateCommandItem(cmd string) (item *CommandItem) {
 	// make sure uid, cmd is not nil
 	h := sha1.New()
 	if cmd == "" {
 		return
 	}
 	io.WriteString(h, cmd)
-	//	hash = h.Sum(nil)
-	cid = h.Sum(nil) // we use hash as cid
 	item = &CommandItem{
-		Hash:     cid,
+		Hash:     h.Sum(nil),
 		Command:  cmd,
 		HitCount: 1,
 	}
@@ -109,14 +107,13 @@ func CreateFlow(cis []*CommandItem) (fID bson.ObjectId, f *Flow) {
 
 func CreateHistory(uid int, cmds []string, date time.Time, desc string) (his *History) {
 	if len(cmds) == 1 {
-		_, ci := CreateCommandItem(cmds[0])
+		ci := CreateCommandItem(cmds[0])
 		_, f := CreateFlow([]*CommandItem{ci})
 		his = CreateHistoryFromFlow(uid, date, desc, f)
 	} else if len(cmds) > 1 {
-
 		cis := make([]*CommandItem, 0, len(cmds))
 		for _, cmd := range cmds {
-			_, ci := CreateCommandItem(cmd)
+			ci := CreateCommandItem(cmd)
 			cis = append(cis, ci)
 		}
 		_, f := CreateFlow(cis)
