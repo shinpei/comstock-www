@@ -86,7 +86,7 @@ func CreateCommandItem(cmd string) (item *CommandItem) {
 	return
 }
 
-func CreateFlow(cis []*CommandItem) (fID bson.ObjectId, f *Flow) {
+func CreateFlow(cis []*CommandItem) (f *Flow) {
 	cilen := len(cis)
 	if cilen == 0 {
 		// return with nil
@@ -96,9 +96,8 @@ func CreateFlow(cis []*CommandItem) (fID bson.ObjectId, f *Flow) {
 	for _, ci := range cis {
 		items = append(items, ci.Hash)
 	}
-	fID = bson.NewObjectId()
 	f = &Flow{
-		ID:       fID,
+		ID:       bson.NewObjectId(),
 		Items:    items,
 		ItemsPtr: cis,
 	}
@@ -108,7 +107,7 @@ func CreateFlow(cis []*CommandItem) (fID bson.ObjectId, f *Flow) {
 func CreateHistory(uid int, cmds []string, date time.Time, desc string) (his *History) {
 	if len(cmds) == 1 {
 		ci := CreateCommandItem(cmds[0])
-		_, f := CreateFlow([]*CommandItem{ci})
+		f := CreateFlow([]*CommandItem{ci})
 		his = CreateHistoryFromFlow(uid, date, desc, f)
 	} else if len(cmds) > 1 {
 		cis := make([]*CommandItem, 0, len(cmds))
@@ -116,7 +115,7 @@ func CreateHistory(uid int, cmds []string, date time.Time, desc string) (his *Hi
 			ci := CreateCommandItem(cmd)
 			cis = append(cis, ci)
 		}
-		_, f := CreateFlow(cis)
+		f := CreateFlow(cis)
 		his = CreateHistoryFromFlow(uid, date, desc, f)
 	} else {
 		log.Fatalln("len(cmds) is 0, no history made")

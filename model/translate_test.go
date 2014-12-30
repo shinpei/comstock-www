@@ -19,12 +19,12 @@ func TestCreateCommandItem(t *testing.T) {
 }
 
 func TestCreateFlow(t *testing.T) {
-	_, f := CreateFlow(createCommandList())
+	f := CreateFlow(createCommandList())
 	AssertEqual(t, "ls -la => wc -l", f.Command())
 }
 
 func TestCreateHistoryFromFlow(t *testing.T) {
-	_, f := CreateFlow(createCommandList())
+	f := CreateFlow(createCommandList())
 	h := CreateHistoryFromFlow(1, time.Now(), "sample", f)
 	AssertEqual(t, "ls -la => wc -l", h.Command())
 }

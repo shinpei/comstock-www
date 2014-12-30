@@ -40,7 +40,7 @@ func TestPostHistories(t *testing.T) {
 
 	ci2 := model.CreateCommandItem("wc -l")
 	cis := []*model.CommandItem{ci1, ci2}
-	_, f := model.CreateFlow(cis)
+	f := model.CreateFlow(cis)
 	h := model.CreateHistoryFromFlow(1, time.Now(), "sample", f)
 	err = InsertHistory(db, h)
 	if err != nil {
