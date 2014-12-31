@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	Version string = "0.2.0-pre"
+	Version string = "0.2.0-pre2"
 )
 
 func main() {
