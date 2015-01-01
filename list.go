@@ -52,6 +52,7 @@ func listHistories(db *mgo.Database, tk string) (nhs []*cmodel.NaiveHistory, err
 	//TODO: duplcation for usession
 	usession, err := GetUserSession(db, tk)
 	if err != nil {
+
 		if _, ok := err.(*cmodel.SessionNotFoundError); ok {
 			return
 		} else if _, ok := err.(*cmodel.SessionExpiresError); ok {
@@ -61,7 +62,7 @@ func listHistories(db *mgo.Database, tk string) (nhs []*cmodel.NaiveHistory, err
 		}
 	}
 
-	hists, err := FindHistoryLastN(db, tk, 100) // defulat limit is 100
+	hists, err := FindHistoryLastN(db, tk, 1000) // defulat limit is 1000
 	if err != nil {
 		if _, ok := err.(*cmodel.CommandNotFoundError); ok {
 			return

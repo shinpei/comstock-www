@@ -173,8 +173,8 @@ func FindHistoryLastN(db *mgo.Database, tk string, limit int) (hists []*model.Hi
 	c := db.C(HISTORY_COLLECTION)
 	q := c.Find(M{"uid": user.UID})
 	count, _ := q.Count()
-	if count < limit {
-		limit = count
+	if limit < count {
+		count = limit
 	}
 	iter := q.Limit(count).Iter()
 	defer iter.Close()
