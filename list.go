@@ -58,11 +58,11 @@ func listHistories(db *mgo.Database, tk string) (nhs []*cmodel.NaiveHistory, err
 		} else if _, ok := err.(*cmodel.SessionExpiresError); ok {
 			return
 		} else {
-			log.Fatal("Crash:", err.Error())
+			log.Fatal("List fails:", err.Error())
 		}
 	}
+	hists, err := FindHistoryLastN(db, tk, 100000) // defulat limit is 1000
 
-	hists, err := FindHistoryLastN(db, tk, 1000) // defulat limit is 1000
 	if err != nil {
 		if _, ok := err.(*cmodel.CommandNotFoundError); ok {
 			return
@@ -72,6 +72,7 @@ func listHistories(db *mgo.Database, tk string) (nhs []*cmodel.NaiveHistory, err
 			log.Fatal("Crash", err.Error())
 		}
 	}
+	//nhs = make([]*cmodel.NaiveHistory, 0, len(hists))
 	for _, hist := range hists {
 		nhs = append(nhs, model.TranslateHistoryToNaiveHistory(usession.UID, hist))
 	}

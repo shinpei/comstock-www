@@ -72,3 +72,7 @@ func TestFetchHistory(t *testing.T) {
 	}
 	AssertEqual(t, "ls -la => wc -l", hist.Command())
 }
+
+func BenchmarkMongo(b *testing.B) {
+
+}

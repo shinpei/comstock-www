@@ -50,9 +50,8 @@ func TranslateHistoryToNaiveHistory(uid int, hist *History) (nh *cmodel.NaiveHis
 			Cmds:        cmds,
 			Shell:       "",
 		}
-
 	} else {
-		log.Panicln("Cannot translate")
+		log.Panicln("Invalid size of history, cannot translate.")
 	}
 	return
 }

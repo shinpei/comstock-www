@@ -176,13 +176,12 @@ func FindHistoryLastN(db *mgo.Database, tk string, limit int) (hists []*model.Hi
 	if limit < count {
 		count = limit
 	}
+
 	iter := q.Limit(count).Iter()
 	defer iter.Close()
 	hists = make([]*model.History, 0, count)
-	h := &history{}
-	counter := 0
+	h := histPool.Get().(*history)
 	for iter.Next(h) {
-		counter++
 		mf, err := findFlow(db, h.Flow)
 		if err != nil {
 			log.Println("Flow is nil")
